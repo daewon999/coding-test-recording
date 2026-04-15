@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend
+backend/.gradle/
+backend/build/
+backend/out/
+
+# Environment
+.env
+backend/src/main/resources/application.properties
+
+# Logs
+*.log
