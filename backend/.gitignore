@@ -30,7 +30,7 @@ bin/
 
 # Environment
 .env
-src/main/resources/application-local.properties
+src/main/resources/application.properties
 
 # OS
 .DS_Store
