@@ -37,11 +37,11 @@ public class Solution {
     // 사용 언어: Python, Java, C++ 등
     private String language;
 
-    // 코드는 길어질 수 있으므로 TEXT 타입으로 저장합니다.
+    // 코드는 길어질 수 있으므로 TEXT 타입으로 저장
     @Column(columnDefinition = "TEXT")
     private String code;
 
-    // 메모도 길어질 수 있으므로 TEXT 타입으로 저장합니다.
+    // 메모도 길어질 수 있으므로 TEXT 타입으로 저장
     @Column(columnDefinition = "TEXT")
     private String memo;
 
