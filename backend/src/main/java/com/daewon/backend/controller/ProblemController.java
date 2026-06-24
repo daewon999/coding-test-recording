@@ -24,6 +24,7 @@ public class ProblemController {
         return problemService.getAllProblems();
     }
 
+    // RequestBody가 붙어서 자동으로 json을 request 객체로 바꿔줌 
     @PostMapping
     public Problem createProblem(@RequestBody ProblemCreateRequest request) {
         return problemService.createProblem(request);
