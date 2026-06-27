@@ -3,6 +3,7 @@ HELP.md
 # Gradle
 .gradle/
 build/
+node_modules/
 out/
 !gradle/wrapper/gradle-wrapper.jar
 

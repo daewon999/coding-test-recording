@@ -7,6 +7,8 @@ import com.daewon.backend.entity.Solution;
 import com.daewon.backend.repository.ProblemRepository;
 import com.daewon.backend.repository.SolutionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -94,5 +96,11 @@ public class SolutionService {
                 .stream()
                 .map(SolutionResponse::new)
                 .collect(Collectors.toList());
+    }
+    // 특정 풀이 상세 조회
+    public SolutionResponse getSolutionById(Long solutionId) {
+        Solution solution = solutionRepository.findById(solutionId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 풀이를 찾을 수 없습니다."));
+        return new SolutionResponse(solution);
     }
 }

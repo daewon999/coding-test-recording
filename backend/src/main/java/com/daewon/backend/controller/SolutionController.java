@@ -52,4 +52,10 @@ public class SolutionController {
     public SolutionResponse createSolution(@RequestBody SolutionCreateRequest request) {
         return solutionService.createSolution(request);
     }
+
+    // 특정 풀이 상세 조회
+    @GetMapping("/{solutionId}")
+    public SolutionResponse getSolutionById(@PathVariable Long solutionId) {
+        return solutionService.getSolutionById(solutionId);
+    }
 }
