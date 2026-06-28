@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getAllSolutions } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
+import { Link } from "react-router-dom";
 
 function SolutionListPage() {
   // 백엔드에서 받아온 전체 풀이 목록
@@ -51,6 +52,10 @@ function SolutionListPage() {
       ) : (
         <div>
           {solutions.map((solution) => (
+            <Link
+              key={solution.id}
+              to={`/solutions/${solution.id}`}
+            >
             <article key={solution.id}>
               <h2>
                 {solution.platform} {solution.problemNumber}
@@ -69,6 +74,7 @@ function SolutionListPage() {
                 <code>{solution.code}</code>
               </pre>
             </article>
+            </Link>
           ))}
         </div>
       )}
