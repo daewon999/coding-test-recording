@@ -1,3 +1,13 @@
+export interface SolutionCreateRequest {
+  problemId: number;
+  language: string;
+  code: string;
+  memo: string;
+  attemptCount: number;
+  correct: boolean;
+  solvedDate: string;
+}
+
 /**
  * Spring Boot의 SolutionResponse와 같은 데이터 구조입니다.
  *
