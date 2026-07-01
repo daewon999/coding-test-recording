@@ -4,7 +4,7 @@ import { createProblem } from '../api/problemAPI';
 import { createSolution } from '../api/solutionAPI';
 
 /**
- * 현재 날짜를 YYYY-MM-DD 형식으로 반환합니다.
+ * 현재 날짜를 YYYY-MM-DD 형식으로 반환
  * input type="date"의 value 형식에 맞추기 위한 함수입니다.
  */
 function getTodayString(): string {
@@ -55,7 +55,7 @@ export default function SolutionCreatePage() {
        * 1단계: 문제를 먼저 저장합니다.
        *
        * 백엔드가 문제를 저장하면
-       * 자동 생성된 problem id가 포함된 객체를 반환합니다.
+       * 자동 생성된 problem id가 포함된 객체를 반환
        */
       const savedProblem = await createProblem({
         platform,
