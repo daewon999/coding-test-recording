@@ -7,6 +7,7 @@ import {
 
 import SolutionListPage from './pages/SolutionListPage';
 import SolutionDetailPage from './pages/SolutionDetailPage';
+import SolutionCreatePage from './pages/SolutionCreatePage';
 import './App.css';
 
 function App() {
@@ -29,6 +30,11 @@ function App() {
         <Route
           path="/solutions/:solutionId"
           element={<SolutionDetailPage />}
+        />
+        {/* 문제풀이 저장페이지 */}
+        <Route
+          path="/solutions/new"
+          element={<SolutionCreatePage />}
         />
       </Routes>
     </BrowserRouter>
