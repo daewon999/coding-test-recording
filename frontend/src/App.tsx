@@ -1,10 +1,10 @@
 import {
   BrowserRouter,
-  Navigate,
   Route,
   Routes,
 } from 'react-router-dom';
 
+import MainPage from './pages/MainPage';
 import SolutionListPage from './pages/SolutionListPage';
 import SolutionDetailPage from './pages/SolutionDetailPage';
 import SolutionCreatePage from './pages/SolutionCreatePage';
@@ -14,10 +14,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 기본 주소로 접속하면 풀이 목록으로 이동 */}
+        {/* 메인 페이지 */}
         <Route
           path="/"
-          element={<Navigate to="/solutions" replace />}
+          element={<MainPage />}
         />
 
         {/* 풀이 전체 목록 페이지 */}
