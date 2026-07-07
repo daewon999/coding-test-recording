@@ -8,7 +8,6 @@ import MainPage from './pages/MainPage';
 import SolutionListPage from './pages/SolutionListPage';
 import SolutionDetailPage from './pages/SolutionDetailPage';
 import SolutionCreatePage from './pages/SolutionCreatePage';
-import './App.css';
 
 function App() {
   return (
