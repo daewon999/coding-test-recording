@@ -3,25 +3,23 @@ import { Link } from 'react-router-dom';
 
 function HeroSection() {
   return (
-    <section className="border-b border-zinc-800 py-20 md:py-28">
+    <section className="border-b border-zinc-800 py-20 md:py-28">      
       <div className="grid items-center gap-12 lg:grid-cols-2">
         {/* 왼쪽: 서비스 소개 */}
         <div>
-          <p className="mb-4 text-sm font-medium text-zinc-400">
+          <p className="mb-5 text-lg font-semibold tracking-[0.18em] text-zinc-400">
             Coding Test Learning Record
           </p>
 
-          <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
-            풀이를 기록하고
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl">
+            오늘의 풀이를 기록하고 
             <br />
-            이전 코드와 비교하며
-            <br />
-            성장하세요.
+            이전 코드와 비교해보세요.
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-7 text-zinc-400 md:text-lg">
-            코딩테스트 풀이 코드와 메모를 저장하고, 같은 문제를 다시
-            풀었을 때 이전 풀이와 비교할 수 있습니다.
+            코딩테스트 풀이를 날짜별로 저장하고, 같은 문제의 이전 풀이와
+            비교하며 성장 과정을 확인해보세요.
           </p>
 
           {/* 주요 버튼 */}
@@ -45,7 +43,7 @@ function HeroSection() {
         </div>
 
         {/* 오른쪽: 서비스 요약 카드 */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-2xl shadow-black/20">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-2xl shadow-black/40">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
             <div>
               <p className="text-sm text-zinc-500">최근 풀이</p>
@@ -59,7 +57,7 @@ function HeroSection() {
             </span>
           </div>
 
-          <div className="mt-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <div className="mt-5 rounded-xl border border-zinc-800 bg-zinc-950/70 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-zinc-500">Python</span>
               <span className="text-xs text-zinc-600">2026.07.07</span>
