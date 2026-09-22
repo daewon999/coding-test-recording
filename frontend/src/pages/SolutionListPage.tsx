@@ -44,6 +44,7 @@ function SolutionListPage() {
   return (
     <main>
       <h1>코딩테스트 풀이 기록</h1>
+      <Link to="/solutions/new">새 풀이 등록</Link>
 
       <p>총 {solutions.length}개의 풀이가 있습니다.</p>
 
