@@ -1,24 +1,40 @@
+import type { Solution } from '../../types/solution';
 import StatCard from './StatCard';
 
-const stats = [
-  {
-    title: '전체 풀이',
-    value: 24,
-    description: '지금까지 저장한 풀이 기록',
-  },
-  {
-    title: '정답 풀이',
-    value: 19,
-    description: '정답으로 기록한 풀이',
-  },
-  {
-    title: '이번 달 풀이',
-    value: 8,
-    description: '이번 달에 추가한 풀이',
-  },
-];
+interface StatsSectionProps {
+  solutions: Solution[];
+  isLoading: boolean;
+  error: string;
+}
 
-function StatsSection() {
+function StatsSection({
+  solutions,
+  isLoading,
+  error,
+}: StatsSectionProps) {
+  const today = new Date();
+  const currentMonth =
+    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const stats = [
+    {
+      title: '전체 풀이',
+      value: solutions.length,
+      description: '지금까지 저장한 풀이 기록',
+    },
+    {
+      title: '정답 풀이',
+      value: solutions.filter((solution) => solution.correct).length,
+      description: '정답으로 기록한 풀이',
+    },
+    {
+      title: '이번 달 풀이',
+      value: solutions.filter((solution) =>
+        solution.solvedDate.startsWith(currentMonth),
+      ).length,
+      description: '이번 달에 푼 풀이 기록',
+    },
+  ];
+
   return (
     <section className="border-b border-zinc-800 py-16">
       <div className="mb-8">
@@ -35,16 +51,26 @@ function StatsSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <p role="status" className="text-sm text-zinc-400">
+          풀이 통계를 불러오는 중입니다...
+        </p>
+      ) : error ? (
+        <p role="alert" className="text-sm text-red-400">
+          {error}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <StatCard
+              key={stat.title}
+              title={stat.title}
+              value={stat.value}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
