@@ -1,45 +1,24 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import type { Solution } from '../../types/solution';
 import SolutionListItem from './SolutionListItem';
 
-/*
- * 최근 풀이 목록에서 사용할 임시 데이터입니다.
- *
- * 나중에는 이 배열을 직접 작성하지 않고,
- * 백엔드 API에서 받아온 데이터로 교체할 예정입니다.
- */
-const recentSolutions = [
-  {
-    id: 1,
-    platform: '백준',
-    problemNumber: '1260',
-    title: 'DFS와 BFS',
-    language: 'Python',
-    solvedDate: '2026-07-07',
-    correct: true,
-  },
-  {
-    id: 2,
-    platform: '프로그래머스',
-    problemNumber: '42576',
-    title: '완주하지 못한 선수',
-    language: 'Java',
-    solvedDate: '2026-07-05',
-    correct: true,
-  },
-  {
-    id: 3,
-    platform: '백준',
-    problemNumber: '14501',
-    title: '퇴사',
-    language: 'Python',
-    solvedDate: '2026-07-02',
-    correct: false,
-  },
-];
+interface RecentSolutionsSectionProps {
+  solutions: Solution[];
+  isLoading: boolean;
+  error: string;
+}
 
-function RecentSolutionsSection() {
+function RecentSolutionsSection({
+  solutions,
+  isLoading,
+  error,
+}: RecentSolutionsSectionProps) {
+  const recentSolutions = [...solutions]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 5);
+
   return (
     <section className="py-16">
       {/* 섹션 제목 영역 */}
@@ -69,18 +48,38 @@ function RecentSolutionsSection() {
 
       {/* 최근 풀이 목록 */}
       <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
-        {recentSolutions.map((solution) => (
-          <SolutionListItem
-            key={solution.id}
-            id={solution.id}
-            platform={solution.platform}
-            problemNumber={solution.problemNumber}
-            title={solution.title}
-            language={solution.language}
-            solvedDate={solution.solvedDate}
-            correct={solution.correct}
-          />
-        ))}
+        {isLoading ? (
+          <p role="status" className="px-6 py-8 text-sm text-zinc-400">
+            최근 풀이를 불러오는 중입니다...
+          </p>
+        ) : error ? (
+          <p role="alert" className="px-6 py-8 text-sm text-red-400">
+            {error}
+          </p>
+        ) : recentSolutions.length === 0 ? (
+          <div className="px-6 py-8 text-sm text-zinc-400">
+            <p>아직 저장한 풀이가 없습니다.</p>
+            <Link
+              to="/solutions/new"
+              className="mt-3 inline-flex text-white hover:underline"
+            >
+              첫 풀이 등록하기
+            </Link>
+          </div>
+        ) : (
+          recentSolutions.map((solution) => (
+            <SolutionListItem
+              key={solution.id}
+              id={solution.id}
+              platform={solution.platform}
+              problemNumber={solution.problemNumber}
+              title={solution.problemTitle}
+              language={solution.language}
+              solvedDate={solution.solvedDate}
+              correct={solution.correct}
+            />
+          ))
+        )}
       </div>
 
       {/* 모바일용 전체 보기 버튼 */}

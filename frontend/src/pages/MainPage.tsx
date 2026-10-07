@@ -25,7 +25,7 @@ function MainPage() {
         }
       } catch {
         if (!ignore) {
-          setError('풀이 통계를 불러오지 못했습니다.');
+          setError('풀이 기록을 불러오지 못했습니다.');
         }
       } finally {
         if (!ignore) {
@@ -51,7 +51,11 @@ function MainPage() {
           isLoading={isLoading}
           error={error}
         />
-        <RecentSolutionsSection />
+        <RecentSolutionsSection
+          solutions={solutions}
+          isLoading={isLoading}
+          error={error}
+        />
       </main>
     </div>
   );
