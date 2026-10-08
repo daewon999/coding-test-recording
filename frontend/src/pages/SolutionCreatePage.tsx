@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { createProblem } from '../api/problemAPI';
 import { createSolution } from '../api/solutionAPI';
@@ -19,6 +20,8 @@ function getTodayString(): string {
 }
 
 export default function SolutionCreatePage() {
+  const navigate = useNavigate();
+
   // 문제 정보
   const [platform, setPlatform] = useState('BOJ');
   const [problemNumber, setProblemNumber] = useState('');
@@ -79,12 +82,7 @@ export default function SolutionCreatePage() {
         solvedDate,
       });
 
-      setMessage(
-        `저장에 성공했습니다. 풀이 ID: ${savedSolution.id}`,
-      );
-
-      console.log('저장된 문제:', savedProblem);
-      console.log('저장된 풀이:', savedSolution);
+      navigate(`/solutions/${savedSolution.id}`, { replace: true });
     } catch (error) {
       console.error(error);
 
