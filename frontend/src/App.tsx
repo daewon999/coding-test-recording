@@ -4,6 +4,7 @@ import {
   Routes,
 } from 'react-router-dom';
 
+import SolutionEditPage from './pages/SolutionEditPage';
 import MainPage from './pages/MainPage';
 import SolutionListPage from './pages/SolutionListPage';
 import SolutionDetailPage from './pages/SolutionDetailPage';
@@ -35,6 +36,7 @@ function App() {
           path="/solutions/new"
           element={<SolutionCreatePage />}
         />
+      <Route path="/solutions/:solutionId/edit" element={<SolutionEditPage />} />
       </Routes>
     </BrowserRouter>
   );

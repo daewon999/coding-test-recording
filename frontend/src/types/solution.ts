@@ -33,3 +33,4 @@ export interface Solution {
   createdAt: string;
   updatedAt: string;
 }
+export type SolutionUpdateRequest = Omit<SolutionCreateRequest, 'problemId'>;
