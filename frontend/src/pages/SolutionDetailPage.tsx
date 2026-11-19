@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { getSolutionById } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
@@ -72,6 +72,13 @@ function SolutionDetailPage() {
   return (
     <main>
       <h1>풀이 상세</h1>
+
+      <Link
+        to={`/solutions/${solution.id}/edit`}
+        className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      >
+        수정
+      </Link>
 
       <section>
         <p>
