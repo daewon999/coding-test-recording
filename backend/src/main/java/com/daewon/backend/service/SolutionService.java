@@ -9,6 +9,8 @@ import com.daewon.backend.repository.SolutionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import com.daewon.backend.dto.SolutionUpdateRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -102,5 +104,70 @@ public class SolutionService {
         Solution solution = solutionRepository.findById(solutionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 풀이를 찾을 수 없습니다."));
         return new SolutionResponse(solution);
+    }
+
+    @Transactional
+        public SolutionResponse updateSolution(
+        Long solutionId,
+        SolutionUpdateRequest request
+    ) {
+    // 메모는 선택 사항이고, 나머지는 필수입니다.
+    if (request.getLanguage() == null
+            || request.getLanguage().isBlank()
+            || request.getLanguage().length() > 255) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "사용 언어는 1~255자로 입력해주세요."
+        );
+    }
+
+    if (request.getCode() == null || request.getCode().isBlank()) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "풀이 코드를 입력해주세요."
+        );
+    }
+
+    if (request.getAttemptCount() == null
+            || request.getAttemptCount() < 1) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "시도 횟수는 1 이상이어야 합니다."
+        );
+    }
+
+    if (request.getCorrect() == null) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "정답 여부를 입력해주세요."
+        );
+    }
+
+    if (request.getSolvedDate() == null) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "풀이 날짜를 입력해주세요."
+        );
+    }
+
+    Solution solution = solutionRepository.findById(solutionId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "해당 풀이를 찾을 수 없습니다."
+            ));
+
+    solution.update(
+            request.getLanguage(),
+            request.getCode(),
+            request.getMemo(),
+            request.getAttemptCount(),
+            request.getCorrect(),
+            request.getSolvedDate()
+    );
+
+    // DB에 변경을 반영하고 @PreUpdate의 수정 시각을 갱신합니다.
+    solutionRepository.flush();
+
+    return new SolutionResponse(solution);
     }
 }

@@ -4,6 +4,7 @@ import com.daewon.backend.dto.SolutionCreateRequest;
 import com.daewon.backend.dto.SolutionResponse;
 import com.daewon.backend.service.SolutionService;
 import org.springframework.web.bind.annotation.*;
+import com.daewon.backend.dto.SolutionUpdateRequest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -57,5 +58,13 @@ public class SolutionController {
     @GetMapping("/{solutionId}")
     public SolutionResponse getSolutionById(@PathVariable Long solutionId) {
         return solutionService.getSolutionById(solutionId);
+    }
+
+    @PutMapping("/{solutionId}")
+    public SolutionResponse updateSolution(
+        @PathVariable("solutionId") Long solutionId,
+        @RequestBody SolutionUpdateRequest request
+    ) {
+    return solutionService.updateSolution(solutionId, request);
     }
 }

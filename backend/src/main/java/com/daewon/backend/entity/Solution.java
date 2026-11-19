@@ -83,6 +83,23 @@ public class Solution {
         this.solvedDate = solvedDate;
     }
 
+
+    public void update(
+            String language,
+            String code,
+            String memo,
+            int attemptCount,
+            boolean correct,
+            LocalDate solvedDate
+    ) {
+        this.language = language;
+        this.code = code;
+        this.memo = memo;
+        this.attemptCount = attemptCount;
+        this.correct = correct;
+        this.solvedDate = solvedDate;
+    }
+
     /*
      * Entity가 처음 저장되기 직전에 자동으로 실행됩니다.
      * createdAt, updatedAt을 직접 넣지 않아도 현재 시간으로 저장하기 위해 사용합니다.
