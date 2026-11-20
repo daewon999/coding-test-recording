@@ -1,4 +1,7 @@
-import { type FormEvent, useState } from 'react';
+import { validateSolution } from '../components/solution/validateSolution';
+import SolutionFields from '../components/solution/SolutionFields';
+import type { SolutionUpdateRequest } from '../types/solution';
+import { type FormEvent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { createProblem } from '../api/problemAPI';
@@ -29,13 +32,15 @@ export default function SolutionCreatePage() {
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState('');
 
-  // 풀이 정보
-  const [language, setLanguage] = useState('Python');
-  const [code, setCode] = useState('');
-  const [memo, setMemo] = useState('');
-  const [attemptCount, setAttemptCount] = useState(1);
-  const [correct, setCorrect] = useState(true);
-  const [solvedDate, setSolvedDate] = useState(getTodayString());
+  const [form, setForm] = useState<SolutionUpdateRequest>(() => ({
+    language: 'Python', code: '', memo: '', attemptCount: 1,
+    correct: true, solvedDate: getTodayString(),
+  }));
+  const submitting = useRef(false);
+
+  function change<K extends keyof SolutionUpdateRequest>(key: K, value: SolutionUpdateRequest[K]) {
+    setForm(previous => ({ ...previous, [key]: value }));
+  }
 
   // 저장 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,6 +55,13 @@ export default function SolutionCreatePage() {
     // form 제출 시 브라우저가 새로고침되는 것을 막습니다.
     event.preventDefault();
 
+    if (submitting.current) return;
+    const validationError = validateSolution(form);
+    if (validationError) {
+      setMessage(validationError);
+      return;
+    }
+    submitting.current = true;
     setIsSubmitting(true);
     setMessage('');
 
@@ -74,12 +86,7 @@ export default function SolutionCreatePage() {
        */
       const savedSolution = await createSolution({
         problemId: savedProblem.id,
-        language,
-        code,
-        memo,
-        attemptCount,
-        correct,
-        solvedDate,
+        ...form,
       });
 
       navigate(`/solutions/${savedSolution.id}`, { replace: true });
@@ -96,6 +103,7 @@ export default function SolutionCreatePage() {
        * 성공하거나 실패해도 마지막에는
        * 저장 중 상태를 종료합니다.
        */
+      submitting.current = false;
       setIsSubmitting(false);
     }
   };
@@ -110,8 +118,8 @@ export default function SolutionCreatePage() {
     >
       <h1>문제 및 풀이 저장</h1>
 
-      <form onSubmit={handleSubmit}>
-        <fieldset
+      <form onSubmit={handleSubmit} aria-busy={isSubmitting}>
+        <fieldset disabled={isSubmitting} className="space-y-5"
           style={{
             marginBottom: '24px',
             padding: '20px',
@@ -219,7 +227,7 @@ export default function SolutionCreatePage() {
           </div>
         </fieldset>
 
-        <fieldset
+        <fieldset disabled={isSubmitting} className="space-y-5"
           style={{
             marginBottom: '24px',
             padding: '20px',
@@ -227,129 +235,7 @@ export default function SolutionCreatePage() {
         >
           <legend>풀이 정보</legend>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="language">사용 언어</label>
-
-            <select
-              id="language"
-              value={language}
-              onChange={(event) =>
-                setLanguage(event.target.value)
-              }
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
-            >
-              <option value="Python">Python</option>
-              <option value="Java">Java</option>
-              <option value="JavaScript">JavaScript</option>
-              <option value="TypeScript">TypeScript</option>
-              <option value="C++">C++</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="code">풀이 코드</label>
-
-            <textarea
-              id="code"
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              required
-              rows={16}
-              placeholder="풀이 코드를 입력해 주세요."
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '12px',
-                marginTop: '6px',
-                fontFamily: 'monospace',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="memo">풀이 메모</label>
-
-            <textarea
-              id="memo"
-              value={memo}
-              onChange={(event) => setMemo(event.target.value)}
-              rows={5}
-              placeholder="어려웠던 점이나 실수한 부분을 입력해 주세요."
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '12px',
-                marginTop: '6px',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="attemptCount">시도 횟수</label>
-
-            <input
-              id="attemptCount"
-              type="number"
-              min={1}
-              value={attemptCount}
-              onChange={(event) =>
-                setAttemptCount(Number(event.target.value))
-              }
-              required
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="correct">정답 여부</label>
-
-            <select
-              id="correct"
-              value={String(correct)}
-              onChange={(event) =>
-                setCorrect(event.target.value === 'true')
-              }
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
-            >
-              <option value="true">정답</option>
-              <option value="false">오답</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="solvedDate">풀이 날짜</label>
-
-            <input
-              id="solvedDate"
-              type="date"
-              value={solvedDate}
-              onChange={(event) =>
-                setSolvedDate(event.target.value)
-              }
-              required
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
-            />
-          </div>
+          <SolutionFields form={form} onChange={change} />
         </fieldset>
 
         <button
@@ -365,7 +251,7 @@ export default function SolutionCreatePage() {
       </form>
 
       {message && (
-        <p
+        <p role="alert"
           style={{
             marginTop: '20px',
             fontWeight: 'bold',
