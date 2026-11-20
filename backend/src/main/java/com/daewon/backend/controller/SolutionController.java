@@ -3,6 +3,7 @@ package com.daewon.backend.controller;
 import com.daewon.backend.dto.SolutionCreateRequest;
 import com.daewon.backend.dto.SolutionResponse;
 import com.daewon.backend.service.SolutionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.daewon.backend.dto.SolutionUpdateRequest;
 
@@ -58,6 +59,12 @@ public class SolutionController {
     @GetMapping("/{solutionId}")
     public SolutionResponse getSolutionById(@PathVariable Long solutionId) {
         return solutionService.getSolutionById(solutionId);
+    }
+
+    @DeleteMapping("/{solutionId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteSolution(@PathVariable("solutionId") Long solutionId) {
+        solutionService.deleteSolution(solutionId);
     }
 
     @PutMapping("/{solutionId}")

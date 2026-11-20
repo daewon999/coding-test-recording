@@ -235,6 +235,7 @@ export default function SolutionCreatePage() {
         >
           <legend>풀이 정보</legend>
 
+          {/* 공통폼으로 입력칸 대체 */}
           <SolutionFields form={form} onChange={change} />
         </fieldset>
 

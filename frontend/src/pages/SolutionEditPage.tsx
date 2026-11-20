@@ -99,6 +99,7 @@ function SolutionEditForm({ solutionId }: { solutionId: number }) {
       <form onSubmit={handleSubmit} aria-busy={isSubmitting}>
         <fieldset disabled={isSubmitting} className="space-y-5">
           <legend className="sr-only">풀이 정보</legend>
+          {/* 공통폼으로 입력칸 대체 */}
           <SolutionFields form={form} onChange={change} />
           <div className="flex gap-3">
             <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-50">{isSubmitting ? '저장 중...' : '수정 저장'}</button>

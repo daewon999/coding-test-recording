@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { getSolutionById } from '../api/solutionAPI';
+import { deleteSolution, getSolutionById } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 
 function SolutionDetailPage() {
   // URL의 :solutionId 값을 가져옵니다.
   // 예: /solutions/1 → solutionId는 "1"
   const { solutionId } = useParams<{ solutionId: string }>();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const deleting = useRef(false);
 
   // 백엔드에서 받아온 풀이 한 개를 저장합니다.
   const [solution, setSolution] = useState<Solution | null>(null);
@@ -57,6 +61,29 @@ function SolutionDetailPage() {
     fetchSolution();
   }, [solutionId]);
 
+  async function handleDelete() {
+    if (!solution || deleting.current) return;
+
+    const confirmed = window.confirm(
+      '이 풀이를 삭제하시겠습니까? 삭제한 풀이는 복구할 수 없습니다. 문제 정보는 유지됩니다.',
+    );
+    if (!confirmed) return;
+
+    deleting.current = true;
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      await deleteSolution(solution.id);
+      navigate('/solutions', { replace: true });
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : '풀이 삭제 중 오류가 발생했습니다.');
+    } finally {
+      deleting.current = false;
+      setIsDeleting(false);
+    }
+  }
+
   if (isLoading) {
     return <p>풀이 정보를 불러오는 중입니다...</p>;
   }
@@ -75,10 +102,21 @@ function SolutionDetailPage() {
 
       <Link
         to={`/solutions/${solution.id}/edit`}
+        aria-disabled={isDeleting}
+        onClick={(event) => { if (isDeleting) event.preventDefault(); }}
         className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
       >
         수정
       </Link>
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="ml-3 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isDeleting ? '삭제 중...' : '삭제'}
+      </button>
+      {deleteError && <p role="alert" className="mt-3 text-red-600">{deleteError}</p>}
 
       <section>
         <p>
