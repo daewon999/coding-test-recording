@@ -11,7 +11,7 @@ public interface SolutionRepository extends JpaRepository<Solution, Long> {
 
     // 특정 문제의 풀이 목록 조회
     List<Solution> findByProblem(Problem problem);
-
+    
     // 특정 문제의 풀이를 최근 순으로 조회
     List<Solution> findByProblemOrderByIdDesc(Problem problem);
 
