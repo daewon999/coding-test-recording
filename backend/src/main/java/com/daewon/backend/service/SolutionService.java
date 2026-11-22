@@ -106,6 +106,18 @@ public class SolutionService {
         return new SolutionResponse(solution);
     }
 
+    // 풀이만 삭제하고 연결된 문제 정보는 유지합니다.
+    @Transactional
+    public void deleteSolution(Long solutionId) {
+        Solution solution = solutionRepository.findById(solutionId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "해당 풀이를 찾을 수 없습니다."
+                ));
+
+        solutionRepository.delete(solution);
+    }
+
     @Transactional
         public SolutionResponse updateSolution(
         Long solutionId,

@@ -1,5 +1,19 @@
 import type { Solution, SolutionCreateRequest, SolutionUpdateRequest, } from '../types/solution';
 
+// 삭제 성공 응답(204)에는 본문이 없으므로 JSON을 읽지 않습니다.
+export async function deleteSolution(solutionId: number): Promise<void> {
+  const response = await fetch(`/api/solutions/${solutionId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('삭제할 풀이를 찾을 수 없습니다.');
+    }
+    throw new Error('풀이 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
 export async function getAllSolutions(): Promise<Solution[]> {
   const response = await fetch('/api/solutions');
 
