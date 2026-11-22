@@ -2,15 +2,12 @@ import { validateSolution } from '../components/solution/validateSolution';
 import SolutionFields from '../components/solution/SolutionFields';
 import type { SolutionUpdateRequest } from '../types/solution';
 import { type FormEvent, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 import { createProblem } from '../api/problemAPI';
 import { createSolution } from '../api/solutionAPI';
 
-/**
- * 현재 날짜를 YYYY-MM-DD 형식으로 반환
- * input type="date"의 value 형식에 맞추기 위한 함수입니다.
- */
 function getTodayString(): string {
   const today = new Date();
 
@@ -108,27 +105,42 @@ export default function SolutionCreatePage() {
     }
   };
 
+  const inputClass =
+    'mt-2 block w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-500';
+
+  const labelClass = 'text-sm font-medium text-zinc-700';
+
+  const cardClass =
+    'min-w-0 space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm';
+
   return (
-    <main
-      style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '24px',
-      }}
-    >
-      <h1>문제 및 풀이 저장</h1>
+    <main className="mx-auto max-w-4xl px-4 py-8 md:px-8">
+      <Link
+        to="/solutions"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900"
+      >
+        <ArrowLeft size={16} aria-hidden="true" />
+        풀이 목록으로
+      </Link>
 
-      <form onSubmit={handleSubmit} aria-busy={isSubmitting}>
-        <fieldset disabled={isSubmitting} className="space-y-5"
-          style={{
-            marginBottom: '24px',
-            padding: '20px',
-          }}
-        >
-          <legend>문제 정보</legend>
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          새 풀이 작성
+        </h1>
+        <p className="mt-2 text-sm text-zinc-500">
+          문제 정보와 풀이를 기록하세요.
+        </p>
+      </header>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="platform">플랫폼</label>
+      <form onSubmit={handleSubmit} aria-busy={isSubmitting} className="space-y-6">
+        <fieldset disabled={isSubmitting} className={cardClass}>
+          <legend className="sr-only">문제 정보</legend>
+          <h2 className="text-base font-semibold text-zinc-900">
+            문제 정보
+          </h2>
+
+          <div>
+            <label htmlFor="platform" className={labelClass}>플랫폼</label>
 
             <select
               id="platform"
@@ -136,12 +148,7 @@ export default function SolutionCreatePage() {
               onChange={(event) =>
                 setPlatform(event.target.value)
               }
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
+              className={inputClass}
             >
               <option value="BOJ">백준</option>
               <option value="PROGRAMMERS">프로그래머스</option>
@@ -150,8 +157,8 @@ export default function SolutionCreatePage() {
             </select>
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="problemNumber">문제 번호</label>
+          <div>
+            <label htmlFor="problemNumber" className={labelClass}>문제 번호</label>
 
             <input
               id="problemNumber"
@@ -162,17 +169,12 @@ export default function SolutionCreatePage() {
               }
               required
               placeholder="예: 1000"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
+              className={inputClass}
             />
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="title">문제 제목</label>
+          <div>
+            <label htmlFor="title" className={labelClass}>문제 제목</label>
 
             <input
               id="title"
@@ -181,17 +183,12 @@ export default function SolutionCreatePage() {
               onChange={(event) => setTitle(event.target.value)}
               required
               placeholder="예: A+B"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
+              className={inputClass}
             />
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="url">문제 URL</label>
+          <div>
+            <label htmlFor="url" className={labelClass}>문제 URL</label>
 
             <input
               id="url"
@@ -199,17 +196,12 @@ export default function SolutionCreatePage() {
               value={url}
               onChange={(event) => setUrl(event.target.value)}
               placeholder="https://www.acmicpc.net/problem/1000"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
+              className={inputClass}
             />
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label htmlFor="tags">태그</label>
+          <div>
+            <label htmlFor="tags" className={labelClass}>태그</label>
 
             <input
               id="tags"
@@ -217,46 +209,36 @@ export default function SolutionCreatePage() {
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="예: 수학, 구현"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '8px',
-                marginTop: '6px',
-              }}
+              className={inputClass}
             />
           </div>
         </fieldset>
 
-        <fieldset disabled={isSubmitting} className="space-y-5"
-          style={{
-            marginBottom: '24px',
-            padding: '20px',
-          }}
-        >
-          <legend>풀이 정보</legend>
+        <fieldset disabled={isSubmitting} className={cardClass}>
+          <legend className="sr-only">풀이 정보</legend>
+          <h2 className="text-base font-semibold text-zinc-900">
+            풀이 정보
+          </h2>
 
           {/* 공통폼으로 입력칸 대체 */}
           <SolutionFields form={form} onChange={change} />
         </fieldset>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{
-            padding: '12px 24px',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {isSubmitting ? '저장 중...' : '문제 및 풀이 저장'}
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? '저장 중...' : '문제 및 풀이 저장'}
+          </button>
+        </div>
       </form>
 
       {message && (
-        <p role="alert"
-          style={{
-            marginTop: '20px',
-            fontWeight: 'bold',
-          }}
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
         >
           {message}
         </p>
