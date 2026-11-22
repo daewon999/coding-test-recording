@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { deleteSolution, getSolutionById } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
+import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 
 function SolutionDetailPage() {
   // URL의 :solutionId 값을 가져옵니다.
@@ -97,63 +98,165 @@ function SolutionDetailPage() {
   }
 
   return (
-    <main>
-      <h1>풀이 상세</h1>
-
+    <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
       <Link
-        to={`/solutions/${solution.id}/edit`}
-        aria-disabled={isDeleting}
-        onClick={(event) => { if (isDeleting) event.preventDefault(); }}
-        className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        to="/solutions"
+        className="mb-6 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900"
       >
-        수정
+        <ArrowLeft size={16} aria-hidden="true" />
+        풀이 목록으로
       </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        disabled={isDeleting}
-        className="ml-3 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isDeleting ? '삭제 중...' : '삭제'}
-      </button>
-      {deleteError && <p role="alert" className="mt-3 text-red-600">{deleteError}</p>}
 
-      <section>
-        <p>
-          <strong>풀이 ID:</strong> {solution.id}
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-zinc-500">
+            {solution.platform} · {solution.problemNumber}
+          </p>
+
+          <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight text-zinc-900">
+            {solution.problemTitle}
+          </h1>
+
+          <p className="mt-2 text-sm text-zinc-500">
+            작성한 풀이와 학습 메모를 확인하세요.
+          </p>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to={`/solutions/${solution.id}/edit`}
+            aria-disabled={isDeleting}
+            onClick={(event) => {
+              if (isDeleting) event.preventDefault();
+            }}
+            className={`inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors ${isDeleting
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:bg-blue-700'
+              }`}
+          >
+            <Pencil size={16} aria-hidden="true" />
+            수정
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+            {isDeleting ? '삭제 중...' : '삭제'}
+          </button>
+        </div>
+      </header>
+
+      {deleteError && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          {deleteError}
         </p>
+      )}
 
-        <p>
-          <strong>언어:</strong> {solution.language}
-        </p>
+<section
+  aria-labelledby="solution-info-title"
+  className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
+>
+  <h2 id="solution-info-title" className="sr-only">
+    풀이 정보
+  </h2>
 
-        <p>
-          <strong>풀이 날짜:</strong> {solution.solvedDate}
-        </p>
+  <dl className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+    <div>
+      <dt className="text-sm text-zinc-500">사용 언어</dt>
+      <dd className="mt-2 font-semibold text-zinc-900">
+        {solution.language}
+      </dd>
+    </div>
 
-        <p>
-          <strong>시도 횟수:</strong> {solution.attemptCount}
-        </p>
+    <div>
+      <dt className="text-sm text-zinc-500">풀이 날짜</dt>
+      <dd className="mt-2 font-semibold text-zinc-900">
+        <time dateTime={solution.solvedDate}>
+          {solution.solvedDate}
+        </time>
+      </dd>
+    </div>
 
-        <p>
-          <strong>정답 여부:</strong>{' '}
+    <div>
+      <dt className="text-sm text-zinc-500">시도 횟수</dt>
+      <dd className="mt-2 font-semibold text-zinc-900">
+        {solution.attemptCount.toLocaleString()}회
+      </dd>
+    </div>
+
+    <div>
+      <dt className="text-sm text-zinc-500">결과</dt>
+      <dd className="mt-2">
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+            solution.correct
+              ? 'bg-emerald-50 text-emerald-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
           {solution.correct ? '정답' : '오답'}
-        </p>
-      </section>
+        </span>
+      </dd>
+    </div>
+  </dl>
+</section>
 
-      <section>
-        <h2>풀이 코드</h2>
+{/* 풀이 코드 */}
+<section
+  aria-labelledby="solution-code-title"
+  className="mt-6 min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+>
+  <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-6 py-4">
+    <h2
+      id="solution-code-title"
+      className="font-semibold text-zinc-900"
+    >
+      풀이 코드
+    </h2>
 
-        <pre>
-          <code>{solution.code}</code>
-        </pre>
-      </section>
+    <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">
+      {solution.language}
+    </span>
+  </div>
 
-      <section>
-        <h2>메모</h2>
+  <pre className="max-h-[600px] overflow-auto bg-zinc-50 p-6 text-sm leading-7 text-zinc-800">
+    <code>{solution.code}</code>
+  </pre>
+</section>
 
-        <p>{solution.memo || '작성된 메모가 없습니다.'}</p>
-      </section>
+{/* 풀이 메모 */}
+<section
+  aria-labelledby="solution-memo-title"
+  className="mt-6 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+>
+  <div className="border-b border-zinc-200 px-6 py-4">
+    <h2
+      id="solution-memo-title"
+      className="font-semibold text-zinc-900"
+    >
+      풀이 메모
+    </h2>
+  </div>
+
+  <div className="p-6">
+    {solution.memo?.trim() ? (
+      <p className="whitespace-pre-wrap break-words text-sm leading-7 text-zinc-700">
+        {solution.memo}
+      </p>
+    ) : (
+      <p className="text-sm text-zinc-500">
+        작성된 메모가 없습니다.
+      </p>
+    )}
+  </div>
+</section>
     </main>
   );
 }
