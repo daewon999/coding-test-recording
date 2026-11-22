@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getAllSolutions } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
+import SolutionListItem from '../components/main/SolutionListItem';
 import { Link } from "react-router-dom";
+import { Plus } from 'lucide-react';
 
 function SolutionListPage() {
   // 백엔드에서 받아온 전체 풀이 목록
@@ -33,52 +35,103 @@ function SolutionListPage() {
     loadSolutions();
   }, []);
 
-  if (loading) {
-    return <p>풀이 목록을 불러오는 중입니다.</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
-
   return (
-    <main>
-      <h1>코딩테스트 풀이 기록</h1>
-      <Link to="/solutions/new">새 풀이 등록</Link>
-
-      <p>총 {solutions.length}개의 풀이가 있습니다.</p>
-
-      {solutions.length === 0 ? (
-        <p>저장된 풀이가 없습니다.</p>
-      ) : (
+    <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          {solutions.map((solution) => (
-            <Link
-              key={solution.id}
-              to={`/solutions/${solution.id}`}
-            >
-            <article key={solution.id}>
-              <h2>
-                {solution.platform} {solution.problemNumber}
-                {' - '}
-                {solution.problemTitle}
-              </h2>
-
-              <p>사용 언어: {solution.language}</p>
-              <p>풀이 날짜: {solution.solvedDate}</p>
-              <p>시도 횟수: {solution.attemptCount}회</p>
-              <p>결과: {solution.correct ? '정답' : '오답'}</p>
-
-              {solution.memo && <p>메모: {solution.memo}</p>}
-
-              <pre>
-                <code>{solution.code}</code>
-              </pre>
-            </article>
-            </Link>
-          ))}
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+            풀이 기록
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">
+            저장한 풀이를 살펴보고 학습 과정을 돌아보세요.
+          </p>
         </div>
+
+        <Link
+          to="/solutions/new"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          <Plus size={16} aria-hidden="true" />
+          새 풀이 작성
+        </Link>
+      </header>
+
+      {!loading && !error && (
+        <p className="mt-8 mb-4 text-sm text-zinc-500">
+          총{' '}
+          <span className="font-semibold text-zinc-900">
+            {solutions.length.toLocaleString()}
+          </span>
+          개의 풀이
+        </p>
       )}
+
+      <div
+        className={`overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm ${loading || error ? 'mt-8' : ''
+          }`}
+      >
+        {loading ? (
+          <p role="status" className="px-6 py-12 text-center text-sm text-zinc-500">
+            풀이 목록을 불러오는 중입니다...
+          </p>
+        ) : error ? (
+          <p role="alert" className="px-6 py-12 text-center text-sm text-red-700">
+            {error}
+          </p>
+        ) : solutions.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-zinc-500">
+              아직 저장한 풀이가 없습니다.
+            </p>
+            <Link
+              to="/solutions/new"
+              className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
+            >
+              첫 풀이 등록하기
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px] text-left text-sm">
+              <caption className="sr-only">
+                전체 풀이의 문제, 언어, 결과, 풀이 날짜
+              </caption>
+
+              <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
+                <tr>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    문제
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    언어
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    결과
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    풀이 날짜
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {solutions.map((solution) => (
+                  <SolutionListItem
+                    key={solution.id}
+                    id={solution.id}
+                    platform={solution.platform}
+                    problemNumber={solution.problemNumber}
+                    title={solution.problemTitle}
+                    language={solution.language}
+                    solvedDate={solution.solvedDate}
+                    correct={solution.correct}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
