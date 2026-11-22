@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { getAllSolutions } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
-
-import MainHeader from '../components/main/MainHeader';
-import HeroSection from '../components/main/HeroSection';
+import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import StatsSection from '../components/main/StatsSection';
 import RecentSolutionsSection from '../components/main/RecentSolutionsSection';
 
@@ -42,22 +41,39 @@ function MainPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <MainHeader />
-      <main className="mx-auto max-w-7xl px-6">
-        <HeroSection />
-        <StatsSection
-          solutions={solutions}
-          isLoading={isLoading}
-          error={error}
-        />
-        <RecentSolutionsSection
-          solutions={solutions}
-          isLoading={isLoading}
-          error={error}
-        />
-      </main>
-    </div>
+    <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      {/* 대시보드 상단 */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+            대시보드
+          </h1>
+          <p className="mt-2 text-sm text-zinc-500">
+            지금까지 쌓아온 풀이 기록을 한눈에 확인하세요.
+          </p>
+        </div>
+
+        <Link
+          to="/solutions/new"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          <Plus size={16} aria-hidden="true" />
+          새 풀이 작성
+        </Link>
+      </header>
+
+      <StatsSection
+        solutions={solutions}
+        isLoading={isLoading}
+        error={error}
+      />
+
+      <RecentSolutionsSection
+        solutions={solutions}
+        isLoading={isLoading}
+        error={error}
+      />
+    </main>
   );
 }
 

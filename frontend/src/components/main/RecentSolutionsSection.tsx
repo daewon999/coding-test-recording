@@ -20,76 +20,93 @@ function RecentSolutionsSection({
     .slice(0, 5);
 
   return (
-    <section className="py-16">
-      {/* 섹션 제목 영역 */}
-      <div className="mb-8 flex items-end justify-between gap-6">
+    <section
+      aria-labelledby="recent-solutions-title"
+      className="mt-8 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 px-6 py-5">
         <div>
-          <p className="text-sm font-medium text-zinc-500">
-            Recent Solutions
-          </p>
-
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+          <h2
+            id="recent-solutions-title"
+            className="text-base font-semibold text-zinc-900"
+          >
             최근 풀이 기록
           </h2>
-
-          <p className="mt-3 text-sm leading-6 text-zinc-400">
-            최근에 저장한 코딩테스트 풀이를 확인해보세요.
+          <p className="mt-1 text-sm text-zinc-500">
+            최근에 저장한 풀이 5개를 확인하세요.
           </p>
         </div>
 
         <Link
           to="/solutions"
-          className="hidden shrink-0 items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white sm:inline-flex"
+          className="inline-flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-blue-600"
         >
           전체 보기
-          <ArrowRight size={16} />
+          <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
 
-      {/* 최근 풀이 목록 */}
-      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
-        {isLoading ? (
-          <p role="status" className="px-6 py-8 text-sm text-zinc-400">
-            최근 풀이를 불러오는 중입니다...
+      {isLoading ? (
+        <p role="status" className="px-6 py-10 text-sm text-zinc-500">
+          최근 풀이를 불러오는 중입니다...
+        </p>
+      ) : error ? (
+        <p role="alert" className="px-6 py-10 text-sm text-red-700">
+          {error}
+        </p>
+      ) : recentSolutions.length === 0 ? (
+        <div className="px-6 py-12 text-center">
+          <p className="text-sm text-zinc-500">
+            아직 저장한 풀이가 없습니다.
           </p>
-        ) : error ? (
-          <p role="alert" className="px-6 py-8 text-sm text-red-400">
-            {error}
-          </p>
-        ) : recentSolutions.length === 0 ? (
-          <div className="px-6 py-8 text-sm text-zinc-400">
-            <p>아직 저장한 풀이가 없습니다.</p>
-            <Link
-              to="/solutions/new"
-              className="mt-3 inline-flex text-white hover:underline"
-            >
-              첫 풀이 등록하기
-            </Link>
-          </div>
-        ) : (
-          recentSolutions.map((solution) => (
-            <SolutionListItem
-              key={solution.id}
-              id={solution.id}
-              platform={solution.platform}
-              problemNumber={solution.problemNumber}
-              title={solution.problemTitle}
-              language={solution.language}
-              solvedDate={solution.solvedDate}
-              correct={solution.correct}
-            />
-          ))
-        )}
-      </div>
+          <Link
+            to="/solutions/new"
+            className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
+          >
+            첫 풀이 등록하기
+          </Link>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left text-sm">
+            <caption className="sr-only">
+              최근에 저장한 풀이의 문제, 언어, 결과, 풀이 날짜
+            </caption>
 
-      {/* 모바일용 전체 보기 버튼 */}
-      <Link
-        to="/solutions"
-        className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white sm:hidden"
-      >
-        전체 풀이 보기
-        <ArrowRight size={16} />
-      </Link>
+            <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
+              <tr>
+                <th scope="col" className="px-6 py-3 font-medium">
+                  문제
+                </th>
+                <th scope="col" className="px-6 py-3 font-medium">
+                  언어
+                </th>
+                <th scope="col" className="px-6 py-3 font-medium">
+                  결과
+                </th>
+                <th scope="col" className="px-6 py-3 font-medium">
+                  풀이 날짜
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {recentSolutions.map((solution) => (
+                <SolutionListItem
+                  key={solution.id}
+                  id={solution.id}
+                  platform={solution.platform}
+                  problemNumber={solution.problemNumber}
+                  title={solution.problemTitle}
+                  language={solution.language}
+                  solvedDate={solution.solvedDate}
+                  correct={solution.correct}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
