@@ -85,16 +85,34 @@ function SolutionDetailPage() {
     }
   }
 
-  if (isLoading) {
-    return <p>풀이 정보를 불러오는 중입니다...</p>;
-  }
+  if (isLoading || error || !solution) {
+    return (
+      <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+        <Link
+          to="/solutions"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          풀이 목록으로
+        </Link>
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          풀이 상세
+        </h1>
 
-  if (!solution) {
-    return <p>풀이 정보가 없습니다.</p>;
+        <div className="mt-8 rounded-xl border border-zinc-200 bg-white px-6 py-12 text-center shadow-sm">
+          {isLoading ? (
+            <p role="status" className="text-sm text-zinc-500">
+              풀이 정보를 불러오는 중입니다...
+            </p>
+          ) : (
+            <p role="alert" className="text-sm text-red-700">
+              {error || '풀이 정보가 없습니다.'}
+            </p>
+          )}
+        </div>
+      </main>
+    );
   }
 
   return (
