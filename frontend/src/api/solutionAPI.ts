@@ -61,6 +61,7 @@ export async function createSolution(
 
   return data;
 }
+
 // 기존 풀이의 내용만 수정합니다. 연결된 문제는 유지합니다.
 export async function updateSolution(
   solutionId: number,
@@ -83,4 +84,21 @@ export async function updateSolution(
   }
 
   return response.json();
+}
+
+// 정답별 풀이 조회
+export async function getSolutionsByCorrect(
+  correct: boolean,
+): Promise<Solution[]> {
+  const response = await fetch(
+    `/api/solutions/correct?correct=${correct}`,
+  );
+
+  if (!response.ok) {
+    throw new Error('풀이 목록을 불러오는 데 실패했습니다.');
+  }
+
+  const data: Solution[] = await response.json();
+
+  return data;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllSolutions } from '../api/solutionAPI';
+import { getAllSolutions, getSolutionsByCorrect } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 import SolutionListItem from '../components/main/SolutionListItem';
 import { Link } from "react-router-dom";
@@ -15,25 +15,44 @@ function SolutionListPage() {
   // API 요청 실패 시 보여줄 오류 메시지
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function loadSolutions() {
-      try {
-        // solutionAPI.ts의 전체 풀이 조회 함수 실행
-        const data = await getAllSolutions();
+  // 현재 선택한 조회 조건
+  const [filter, setFilter] =
+    useState<'all' | 'correct' | 'incorrect'>('all');
 
-        // 응답받은 풀이 배열을 상태에 저장
-        setSolutions(data);
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadSolutions() {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data =
+          filter === 'all'
+            ? await getAllSolutions()
+            : await getSolutionsByCorrect(filter === 'correct');
+
+        if (!ignore) {
+          setSolutions(data);
+        }
       } catch (error) {
-        console.error('풀이 조회 오류:', error);
-        setError('풀이 목록을 불러오지 못했습니다.');
+        if (!ignore) {
+          console.error('풀이 조회 오류:', error);
+          setError('풀이 목록을 불러오지 못했습니다.');
+        }
       } finally {
-        // 성공하거나 실패하면 로딩 종료
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     }
 
     loadSolutions();
-  }, []);
+
+    return () => {
+      ignore = true;
+    };
+  }, [filter]);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
@@ -55,6 +74,33 @@ function SolutionListPage() {
           새 풀이 작성
         </Link>
       </header>
+
+      <div className="mt-6 flex gap-2" aria-label="풀이 결과 필터">
+        <button
+          type="button"
+          onClick={() => setFilter('all')}
+          aria-pressed={filter === 'all'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          전체
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter('correct')}
+          aria-pressed={filter === 'correct'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          정답
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter('incorrect')}
+          aria-pressed={filter === 'incorrect'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          오답
+        </button>
+      </div>
 
       {!loading && !error && (
         <p className="mt-8 mb-4 text-sm text-zinc-500">
@@ -81,14 +127,29 @@ function SolutionListPage() {
         ) : solutions.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-zinc-500">
-              아직 저장한 풀이가 없습니다.
+              {filter === 'all'
+                ? '아직 저장한 풀이가 없습니다.'
+                : filter === 'correct'
+                  ? '정답 풀이가 없습니다.'
+                  : '오답 풀이가 없습니다.'}
             </p>
-            <Link
-              to="/solutions/new"
-              className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
-            >
-              첫 풀이 등록하기
-            </Link>
+
+            {filter === 'all' ? (
+              <Link
+                to="/solutions/new"
+                className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
+              >
+                첫 풀이 등록하기
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setFilter('all')}
+                className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
+              >
+                전체 풀이 보기
+              </button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
