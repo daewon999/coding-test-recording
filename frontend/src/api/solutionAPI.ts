@@ -129,3 +129,18 @@ export async function recordSolution(request: RecordSolutionRequest): Promise<Re
   }
   return response.json();
 }
+
+// 같은 문제에 연결된 모든 풀이 조회
+export async function getSolutionsByProblemId(
+  problemId: number,
+): Promise<Solution[]> {
+  const response = await fetch(
+    `/api/solutions/problem/${problemId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error('문제의 풀이 이력을 불러오는 데 실패했습니다.');
+  }
+
+  return response.json();
+}

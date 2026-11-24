@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { deleteSolution, getSolutionById } from '../api/solutionAPI';
+import { deleteSolution, getSolutionById, getSolutionsByProblemId, } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 
@@ -24,6 +24,23 @@ function SolutionDetailPage() {
 
   // 오류 메시지를 저장합니다.
   const [error, setError] = useState<string | null>(null);
+
+  // 같은 문제에 연결된 풀이 이력
+  const [solutions, setSolutions] = useState<Solution[]>([]);
+
+  // 풀이 날짜가 최근인 순서로 정렬합니다.
+  const sortedSolutions = [...solutions].sort(
+    (a, b) =>
+      b.solvedDate.localeCompare(a.solvedDate) || b.id - a.id,
+  );
+
+  const latestSolvedDate = sortedSolutions[0]?.solvedDate;
+
+  // 같은 언어는 한 번만 표시합니다.
+  const usedLanguages = [
+    ...new Set(solutions.map((item) => item.language)),
+  ].join(' · ');
+
 
   useEffect(() => {
     async function fetchSolution() {
@@ -48,10 +65,11 @@ function SolutionDetailPage() {
         setIsLoading(true);
         setError(null);
 
-        // GET /api/solutions/{solutionId} 요청
         const data = await getSolutionById(parsedSolutionId);
+        const history = await getSolutionsByProblemId(data.problemId);
 
         setSolution(data);
+        setSolutions(history);
       } catch (error) {
         console.error(error);
         setError('풀이 상세 정보를 불러오지 못했습니다.');
@@ -64,11 +82,11 @@ function SolutionDetailPage() {
     fetchSolution();
   }, [solutionId]);
 
-  async function handleDelete() {
+  async function handleDelete(target: Solution) {
     if (!solution || deleting.current) return;
 
     const confirmed = window.confirm(
-      '이 풀이를 삭제하시겠습니까? 삭제한 풀이는 복구할 수 없습니다. 문제 정보는 유지됩니다.',
+      `${target.solvedDate} · ${target.language} 풀이를 삭제하시겠습니까? 삭제한 풀이는 복구할 수 없습니다.`,
     );
     if (!confirmed) return;
 
@@ -77,10 +95,29 @@ function SolutionDetailPage() {
     setDeleteError('');
 
     try {
-      await deleteSolution(solution.id);
-      navigate('/solutions', { replace: true });
+      await deleteSolution(target.id);
+
+      const remaining = solutions.filter(
+        (item) => item.id !== target.id,
+      );
+      setSolutions(remaining);
+
+      if (remaining.length === 0) {
+        navigate('/solutions', { replace: true });
+      } else if (target.id === solution.id) {
+        const latest = [...remaining].sort(
+          (a, b) =>
+            b.solvedDate.localeCompare(a.solvedDate) || b.id - a.id,
+        )[0];
+
+        navigate(`/solutions/${latest.id}`, { replace: true });
+      }
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : '풀이 삭제 중 오류가 발생했습니다.');
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : '풀이 삭제 중 오류가 발생했습니다.',
+      );
     } finally {
       deleting.current = false;
       setIsDeleting(false);
@@ -143,33 +180,6 @@ function SolutionDetailPage() {
             작성한 풀이와 학습 메모를 확인하세요.
           </p>
         </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            to={`/solutions/${solution.id}/edit`}
-            aria-disabled={isDeleting}
-            onClick={(event) => {
-              if (isDeleting) event.preventDefault();
-            }}
-            className={`inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors ${isDeleting
-                ? 'cursor-not-allowed opacity-50'
-                : 'hover:bg-blue-700'
-              }`}
-          >
-            <Pencil size={16} aria-hidden="true" />
-            수정
-          </Link>
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Trash2 size={16} aria-hidden="true" />
-            {isDeleting ? '삭제 중...' : '삭제'}
-          </button>
-        </div>
       </header>
 
       {deleteError && (
@@ -181,104 +191,113 @@ function SolutionDetailPage() {
         </p>
       )}
 
-<section
-  aria-labelledby="solution-info-title"
-  className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
->
-  <h2 id="solution-info-title" className="sr-only">
-    풀이 정보
-  </h2>
 
-  <dl className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-    <div>
-      <dt className="text-sm text-zinc-500">사용 언어</dt>
-      <dd className="mt-2 font-semibold text-zinc-900">
-        {solution.language}
-      </dd>
-    </div>
+      <section
+        aria-labelledby="solution-info-title"
+        className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
+      >
+        <h2 id="solution-info-title" className="sr-only">
+          풀이 정보
+        </h2>
 
-    <div>
-      <dt className="text-sm text-zinc-500">풀이 날짜</dt>
-      <dd className="mt-2 font-semibold text-zinc-900">
-        <time dateTime={solution.solvedDate}>
-          {solution.solvedDate}
-        </time>
-      </dd>
-    </div>
+        <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div>
+            <dt className="text-sm text-zinc-500">사용 언어</dt>
+            <dd className="mt-2 font-semibold text-zinc-900">
+              {usedLanguages || '기록 없음'}
+            </dd>
+          </div>
 
-    <div>
-      <dt className="text-sm text-zinc-500">시도 횟수</dt>
-      <dd className="mt-2 font-semibold text-zinc-900">
-        {solution.attemptCount.toLocaleString()}회
-      </dd>
-    </div>
+          <div>
+            <dt className="text-sm text-zinc-500">최근 풀이 날짜</dt>
+            <dd className="mt-2 font-semibold text-zinc-900">
+              {latestSolvedDate ? (
+                <time dateTime={latestSolvedDate}>
+                  {latestSolvedDate}
+                </time>
+              ) : (
+                '기록 없음'
+              )}
+            </dd>
+          </div>
 
-    <div>
-      <dt className="text-sm text-zinc-500">결과</dt>
-      <dd className="mt-2">
-        <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-            solution.correct
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-red-50 text-red-700'
-          }`}
-        >
-          {solution.correct ? '정답' : '오답'}
-        </span>
-      </dd>
-    </div>
-  </dl>
-</section>
+          <div>
+            <dt className="text-sm text-zinc-500">누적 풀이 수</dt>
+            <dd className="mt-2 font-semibold text-zinc-900">
+              {solutions.length.toLocaleString()}회
+            </dd>
+          </div>
+        </dl>
+      </section>
 
-{/* 풀이 코드 */}
-<section
-  aria-labelledby="solution-code-title"
-  className="mt-6 min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
->
-  <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-6 py-4">
-    <h2
-      id="solution-code-title"
-      className="font-semibold text-zinc-900"
-    >
-      풀이 코드
-    </h2>
+      <section className="mt-6 space-y-4">
+        <h2 className="text-lg font-semibold text-zinc-900">
+          풀이 이력 ({solutions.length}개)
+        </h2>
 
-    <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">
-      {solution.language}
-    </span>
-  </div>
+        {sortedSolutions.map((item) => (
+          <details
+            key={item.id}
+            open={item.id === solution.id}
+            className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+          >
+            <summary className="cursor-pointer px-6 py-4 font-medium text-zinc-900">
+              <time dateTime={item.solvedDate}>{item.solvedDate}</time>
+              {' · '}
+              {item.language}
+              {' · '}
+              <span
+                className={
+                  item.correct ? 'text-emerald-700' : 'text-red-700'
+                }
+              >
+                {item.correct ? '정답' : '오답'}
+              </span>
+            </summary>
 
-  <pre className="max-h-[600px] overflow-auto bg-zinc-50 p-6 text-sm leading-7 text-zinc-800">
-    <code>{solution.code}</code>
-  </pre>
-</section>
+            <div className="flex justify-end gap-2 border-t border-zinc-200 px-6 py-3">
+              <Link
+                to={`/solutions/${item.id}/edit`}
+                aria-disabled={isDeleting}
+                onClick={(event) => {
+                  if (isDeleting) event.preventDefault();
+                }}
+                className={`inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white ${isDeleting
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:bg-blue-700'
+                  }`}
+              >
+                <Pencil size={16} aria-hidden="true" />
+                수정
+              </Link>
 
-{/* 풀이 메모 */}
-<section
-  aria-labelledby="solution-memo-title"
-  className="mt-6 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
->
-  <div className="border-b border-zinc-200 px-6 py-4">
-    <h2
-      id="solution-memo-title"
-      className="font-semibold text-zinc-900"
-    >
-      풀이 메모
-    </h2>
-  </div>
+              <button
+                type="button"
+                onClick={() => handleDelete(item)}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                삭제
+              </button>
+            </div>
 
-  <div className="p-6">
-    {solution.memo?.trim() ? (
-      <p className="whitespace-pre-wrap break-words text-sm leading-7 text-zinc-700">
-        {solution.memo}
-      </p>
-    ) : (
-      <p className="text-sm text-zinc-500">
-        작성된 메모가 없습니다.
-      </p>
-    )}
-  </div>
-</section>
+            <div className="border-t border-zinc-200">
+              <h3 className="px-6 pt-4 font-semibold">풀이 코드</h3>
+              <pre className="mt-3 max-h-[600px] overflow-auto bg-zinc-50 p-6 text-sm leading-7 text-zinc-800">
+                <code>{item.code}</code>
+              </pre>
+
+              <div className="p-6">
+                <h3 className="mb-3 font-semibold">풀이 메모</h3>
+                <p className="whitespace-pre-wrap break-words text-sm leading-7 text-zinc-700">
+                  {item.memo?.trim() ? item.memo : '작성된 메모가 없습니다.'}
+                </p>
+              </div>
+            </div>
+          </details>
+        ))}
+      </section>
     </main>
   );
 }
