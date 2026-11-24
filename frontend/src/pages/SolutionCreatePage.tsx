@@ -30,7 +30,7 @@ export default function SolutionCreatePage() {
   const [tags, setTags] = useState('');
 
   const [form, setForm] = useState<SolutionUpdateRequest>(() => ({
-    language: 'Python', code: '', memo: '', attemptCount: 1,
+    language: 'Python', code: '', memo: '',
     correct: true, solvedDate: getTodayString(),
   }));
   const submitting = useRef(false);

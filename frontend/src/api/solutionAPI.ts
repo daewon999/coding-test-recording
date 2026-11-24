@@ -95,7 +95,7 @@ export async function updateSolution(
 
   if (!response.ok) {
     if (response.status === 400) {
-      throw new Error('입력값을 확인해주세요. 언어·코드·날짜는 필수이며 시도 횟수는 1 이상이어야 합니다.');
+      throw new Error('입력값을 확인해주세요. 언어·코드·날짜는 필수입니다.');
     }
     if (response.status === 404) {
       throw new Error('수정할 풀이를 찾을 수 없습니다.');

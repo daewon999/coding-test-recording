@@ -17,7 +17,6 @@ public class SolutionResponse {
     private String language;
     private String code;
     private String memo;
-    private int attemptCount;
     private boolean correct;
     private LocalDate solvedDate;
 
@@ -35,7 +34,6 @@ public class SolutionResponse {
         this.language = solution.getLanguage();
         this.code = solution.getCode();
         this.memo = solution.getMemo();
-        this.attemptCount = solution.getAttemptCount();
         this.correct = solution.isCorrect();
         this.solvedDate = solution.getSolvedDate();
 
@@ -73,10 +71,6 @@ public class SolutionResponse {
 
     public String getMemo() {
         return memo;
-    }
-
-    public int getAttemptCount() {
-        return attemptCount;
     }
 
     public boolean isCorrect() {

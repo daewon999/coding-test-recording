@@ -37,7 +37,6 @@ class RecordSolutionServiceTest {
         ReflectionTestUtils.setField(s, "language", "Python");
         ReflectionTestUtils.setField(s, "code", "print(1)");
         ReflectionTestUtils.setField(s, "memo", "new attempt");
-        ReflectionTestUtils.setField(s, "attemptCount", 1);
         ReflectionTestUtils.setField(s, "correct", false);
         ReflectionTestUtils.setField(s, "solvedDate", LocalDate.of(2026, 11, 24));
         return new RecordSolutionRequest(p, s, selected, createNew);

@@ -25,28 +25,35 @@ public class RecordSolutionService {
     public RecordSolutionResult record(RecordSolutionRequest request) {
         var p = request.problem();
         var s = request.solution();
-        if (p == null || s == null) throw badRequest("문제와 풀이 정보를 입력해주세요.");
+        if (p == null || s == null)
+            throw badRequest("문제와 풀이 정보를 입력해주세요.");
         required(p.getPlatform(), "플랫폼");
         required(p.getTitle(), "문제 제목");
         optional(p.getProblemNumber());
         optional(p.getUrl());
         optional(p.getTags());
         required(s.getLanguage(), "언어");
-        if (s.getCode() == null || s.getCode().isBlank() || s.getAttemptCount() == null
-                || s.getAttemptCount() < 1 || s.getCorrect() == null || s.getSolvedDate() == null) {
-            throw badRequest("코드·날짜·정답 여부를 입력하고 시도 횟수를 1 이상으로 설정해주세요.");
+        if (s.getCode() == null || s.getCode().isBlank()
+                || s.getCorrect() == null || s.getSolvedDate() == null) {
+            throw badRequest("코드·날짜·정답 여부를 입력해주세요.");
         }
-        if (request.createNew() && request.selectedProblemId() != null) throw badRequest("저장 방법을 하나만 선택해주세요.");
+        if (request.createNew() && request.selectedProblemId() != null)
+            throw badRequest("저장 방법을 하나만 선택해주세요.");
         String url;
-        try { url = ProblemUrl.normalize(p.getUrl()); }
-        catch (IllegalArgumentException ex) { throw badRequest("올바른 HTTP 또는 HTTPS 문제 URL을 입력해주세요."); }
+        try {
+            url = ProblemUrl.normalize(p.getUrl());
+        } catch (IllegalArgumentException ex) {
+            throw badRequest("올바른 HTTP 또는 HTTPS 문제 URL을 입력해주세요.");
+        }
 
         // 기존 데이터의 URL도 같은 규칙으로 비교한다. 과거 중복 행은 임의로 병합하지 않는다.
         List<Problem> existing = problems.findAll();
-        List<Problem> urlMatches = url.isEmpty() ? List.of() : existing.stream()
-                .filter(problem -> url.equals(existingUrl(problem.getUrl()))).toList();
-        List<Problem> candidates = !urlMatches.isEmpty() ? urlMatches : existing.stream()
-                .filter(problem -> titleKey(p.getTitle()).equals(titleKey(problem.getTitle()))).toList();
+        List<Problem> urlMatches = url.isEmpty() ? List.of()
+                : existing.stream()
+                        .filter(problem -> url.equals(existingUrl(problem.getUrl()))).toList();
+        List<Problem> candidates = !urlMatches.isEmpty() ? urlMatches
+                : existing.stream()
+                        .filter(problem -> titleKey(p.getTitle()).equals(titleKey(problem.getTitle()))).toList();
         Problem problem;
         boolean reused = true;
         if (urlMatches.size() == 1) {
@@ -65,23 +72,37 @@ public class RecordSolutionService {
             reused = false;
         }
         Solution saved = solutions.saveAndFlush(new Solution(problem, s.getLanguage().trim(), s.getCode(),
-                s.getMemo(), s.getAttemptCount(), s.getCorrect(), s.getSolvedDate()));
+                s.getMemo(), 1, s.getCorrect(), s.getSolvedDate()));
         return new RecordSolutionResult(new SolutionResponse(saved), reused, List.of(), false);
     }
 
     private static String existingUrl(String value) {
-        try { return ProblemUrl.normalize(value); }
-        catch (IllegalArgumentException ex) { return ""; }
+        try {
+            return ProblemUrl.normalize(value);
+        } catch (IllegalArgumentException ex) {
+            return "";
+        }
     }
-    private static String trim(String value) { return value == null ? "" : value.trim(); }
-    private static String titleKey(String value) { return trim(value).replaceAll("\\s+", " "); }
+
+    private static String trim(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private static String titleKey(String value) {
+        return trim(value).replaceAll("\\s+", " ");
+    }
+
     private static void required(String value, String name) {
-        if (value == null || value.isBlank()) throw badRequest(name + "을 입력해주세요.");
+        if (value == null || value.isBlank())
+            throw badRequest(name + "을 입력해주세요.");
         optional(value);
     }
+
     private static void optional(String value) {
-        if (value != null && value.length() > 255) throw badRequest("문제 정보와 언어는 각 255자 이내로 입력해주세요.");
+        if (value != null && value.length() > 255)
+            throw badRequest("문제 정보와 언어는 각 255자 이내로 입력해주세요.");
     }
+
     private static ResponseStatusException badRequest(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }

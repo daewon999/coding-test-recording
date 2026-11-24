@@ -36,7 +36,7 @@ public class SolutionService {
                                 request.getLanguage(),
                                 request.getCode(),
                                 request.getMemo(),
-                                request.getAttemptCount(),
+                                1,
                                 request.isCorrect(),
                                 request.getSolvedDate());
 
@@ -147,13 +147,6 @@ public class SolutionService {
                                         "풀이 코드를 입력해주세요.");
                 }
 
-                if (request.getAttemptCount() == null
-                                || request.getAttemptCount() < 1) {
-                        throw new ResponseStatusException(
-                                        HttpStatus.BAD_REQUEST,
-                                        "시도 횟수는 1 이상이어야 합니다.");
-                }
-
                 if (request.getCorrect() == null) {
                         throw new ResponseStatusException(
                                         HttpStatus.BAD_REQUEST,
@@ -175,7 +168,7 @@ public class SolutionService {
                                 request.getLanguage(),
                                 request.getCode(),
                                 request.getMemo(),
-                                request.getAttemptCount(),
+                                solution.getAttemptCount(),
                                 request.getCorrect(),
                                 request.getSolvedDate());
 
