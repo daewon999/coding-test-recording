@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { deleteSolution, getSolutionById } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
@@ -10,6 +10,8 @@ function SolutionDetailPage() {
   // 예: /solutions/1 → solutionId는 "1"
   const { solutionId } = useParams<{ solutionId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const savedMessage = (location.state as { savedMessage?: string } | null)?.savedMessage;
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const deleting = useRef(false);
@@ -117,6 +119,8 @@ function SolutionDetailPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      {savedMessage && <p role="status" className="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">{savedMessage}</p>}
+
       <Link
         to="/solutions"
         className="mb-6 inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900"

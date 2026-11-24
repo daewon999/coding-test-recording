@@ -5,8 +5,8 @@ import { type FormEvent, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
-import { createProblem } from '../api/problemAPI';
-import { createSolution } from '../api/solutionAPI';
+import { recordSolution } from '../api/solutionAPI';
+import type { Problem } from '../types/problem';
 
 function getTodayString(): string {
   const today = new Date();
@@ -42,6 +42,9 @@ export default function SolutionCreatePage() {
   // 저장 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+  const [candidates, setCandidates] = useState<Problem[]>([]);
+  const [choice, setChoice] = useState<string>('');
+  const [canCreateNew, setCanCreateNew] = useState(false);
 
   /**
    * 저장 버튼을 눌렀을 때 실행되는 함수입니다.
@@ -53,6 +56,10 @@ export default function SolutionCreatePage() {
     event.preventDefault();
 
     if (submitting.current) return;
+    if (candidates.length > 0 && !choice) {
+      setMessage('기존 문제 또는 새 문제로 저장을 선택해주세요.');
+      return;
+    }
     const validationError = validateSolution(form);
     if (validationError) {
       setMessage(validationError);
@@ -63,30 +70,25 @@ export default function SolutionCreatePage() {
     setMessage('');
 
     try {
-      /*
-       * 1단계: 문제를 먼저 저장합니다.
-       *
-       * 백엔드가 문제를 저장하면
-       * 자동 생성된 problem id가 포함된 객체를 반환
-       */
-      const savedProblem = await createProblem({
-        platform,
-        problemNumber,
-        title,
-        url,
-        tags,
+      const result = await recordSolution({
+        problem: { platform, problemNumber, title, url, tags },
+        solution: form,
+        selectedProblemId: choice && choice !== 'new' ? Number(choice) : null,
+        createNew: choice === 'new',
       });
-
-      /*
-       * 2단계: 앞에서 반환받은 문제 id를 사용해
-       * 풀이를 저장합니다.
-       */
-      const savedSolution = await createSolution({
-        problemId: savedProblem.id,
-        ...form,
+      if (!result.solution) {
+        setCandidates(result.candidates);
+        setCanCreateNew(result.canCreateNew);
+        setChoice('');
+        setMessage('같은 URL 또는 제목의 문제가 있어요. 아래에서 저장 방법을 선택해주세요.');
+        return;
+      }
+      navigate(`/solutions/${result.solution.id}`, {
+        replace: true,
+        state: { savedMessage: result.reusedProblem
+          ? '이전에 등록한 문제에 새 풀이를 추가했어요.'
+          : '새 문제와 풀이를 저장했어요.' },
       });
-
-      navigate(`/solutions/${savedSolution.id}`, { replace: true });
     } catch (error) {
       console.error(error);
 
@@ -133,7 +135,11 @@ export default function SolutionCreatePage() {
       </header>
 
       <form onSubmit={handleSubmit} aria-busy={isSubmitting} className="space-y-6">
-        <fieldset disabled={isSubmitting} className={cardClass}>
+        <fieldset disabled={isSubmitting} className={cardClass} onChange={() => {
+          setCandidates([]);
+          setChoice('');
+          setMessage('');
+        }}>
           <legend className="sr-only">문제 정보</legend>
           <h2 className="text-base font-semibold text-zinc-900">
             문제 정보
@@ -158,7 +164,7 @@ export default function SolutionCreatePage() {
           </div>
 
           <div>
-            <label htmlFor="problemNumber" className={labelClass}>문제 번호</label>
+            <label htmlFor="problemNumber" className={labelClass}>문제 번호 (선택)</label>
 
             <input
               id="problemNumber"
@@ -167,8 +173,7 @@ export default function SolutionCreatePage() {
               onChange={(event) =>
                 setProblemNumber(event.target.value)
               }
-              required
-              placeholder="예: 1000"
+              placeholder="번호가 있는 경우에만 입력하세요"
               className={inputClass}
             />
           </div>
@@ -223,6 +228,30 @@ export default function SolutionCreatePage() {
           {/* 공통폼으로 입력칸 대체 */}
           <SolutionFields form={form} onChange={change} />
         </fieldset>
+
+        {candidates.length > 0 && (
+          <fieldset disabled={isSubmitting} className={cardClass}>
+            <legend className="px-2 font-semibold">기존 문제 확인</legend>
+            <p className="text-sm text-zinc-600">같은 문제라면 선택해주세요. 기존 코드와 메모는 보존하고 새 풀이만 추가합니다. 기타 플랫폼은 서로 다른 출처일 수 있으니 제목과 URL을 확인해주세요.</p>
+            {candidates.map(candidate => (
+              <label key={candidate.id} className="flex items-start gap-3 rounded-lg border border-zinc-200 p-3">
+                <input type="radio" name="problemChoice" value={candidate.id}
+                  checked={choice === String(candidate.id)}
+                  onChange={() => setChoice(String(candidate.id))} />
+                <span className="min-w-0 break-words text-sm">
+                  {candidate.title} · {candidate.platform} · 기록 #{candidate.id}
+                  <span className="block text-zinc-500">{candidate.url || 'URL 없음'}</span>
+                </span>
+              </label>
+            ))}
+            {canCreateNew && <label className="flex items-center gap-3 text-sm">
+              <input type="radio" name="problemChoice" value="new" checked={choice === 'new'}
+                onChange={() => setChoice('new')} />
+              다른 문제예요. 새 문제로 저장할게요.
+            </label>}
+            <p className="text-xs text-zinc-500">동일한 URL이 있는 경우에는 기존 문제에 연결됩니다.</p>
+          </fieldset>
+        )}
 
         <div className="flex justify-end">
           <button

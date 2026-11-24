@@ -102,3 +102,30 @@ export async function getSolutionsByCorrect(
 
   return data;
 }
+export interface RecordSolutionRequest {
+  problem: import('../types/problem').ProblemCreateRequest;
+  solution: SolutionUpdateRequest;
+  selectedProblemId: number | null;
+  createNew: boolean;
+}
+
+export interface RecordSolutionResult {
+  solution: Solution | null;
+  reusedProblem: boolean;
+  candidates: import('../types/problem').Problem[];
+  canCreateNew: boolean;
+}
+
+export async function recordSolution(request: RecordSolutionRequest): Promise<RecordSolutionResult> {
+  const response = await fetch('/api/solutions/record', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    throw new Error(response.status === 400
+      ? '입력값과 문제 선택을 확인해주세요. 제목·언어·코드·날짜는 필수이고, URL은 http(s) 주소여야 합니다. 문제 정보는 각 255자 이내로 입력해주세요.'
+      : '풀이 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+  }
+  return response.json();
+}

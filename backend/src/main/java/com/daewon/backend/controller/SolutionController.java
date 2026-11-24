@@ -1,6 +1,9 @@
 package com.daewon.backend.controller;
 
 import com.daewon.backend.dto.SolutionCreateRequest;
+import com.daewon.backend.dto.RecordSolutionRequest;
+import com.daewon.backend.dto.RecordSolutionResult;
+import com.daewon.backend.service.RecordSolutionService;
 import com.daewon.backend.dto.SolutionResponse;
 import com.daewon.backend.service.SolutionService;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,17 @@ import java.util.List;
 public class SolutionController {
 
     private final SolutionService solutionService;
+    private final RecordSolutionService recordSolutionService;
 
-    public SolutionController(SolutionService solutionService) {
+    public SolutionController(SolutionService solutionService, RecordSolutionService recordSolutionService) {
         this.solutionService = solutionService;
+        this.recordSolutionService = recordSolutionService;
+    }
+
+    @PostMapping("/record")
+    public RecordSolutionResult recordSolution(
+            @RequestBody RecordSolutionRequest request) {
+        return recordSolutionService.record(request);
     }
 
     @GetMapping
