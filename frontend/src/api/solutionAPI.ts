@@ -14,6 +14,26 @@ export async function deleteSolution(solutionId: number): Promise<void> {
   }
 }
 
+// 특정 문제에 연결된 풀이를 모두 삭제합니다.
+export async function deleteSolutionsByProblemId(
+  problemId: number,
+): Promise<void> {
+  const response = await fetch(
+    `/api/solutions/problem/${problemId}`,
+    { method: 'DELETE' },
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('해당 문제를 찾을 수 없습니다.');
+    }
+
+    throw new Error(
+      '전체 풀이 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.',
+    );
+  }
+}
+
 export async function getAllSolutions(): Promise<Solution[]> {
   const response = await fetch('/api/solutions');
 

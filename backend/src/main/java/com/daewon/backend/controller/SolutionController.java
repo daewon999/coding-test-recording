@@ -71,18 +71,26 @@ public class SolutionController {
     public SolutionResponse getSolutionById(@PathVariable Long solutionId) {
         return solutionService.getSolutionById(solutionId);
     }
-
+    
+    // 풀이 하나 삭제
     @DeleteMapping("/{solutionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSolution(@PathVariable("solutionId") Long solutionId) {
         solutionService.deleteSolution(solutionId);
     }
 
+    // 특정 문제의 풀이 전부 삭제
+    @DeleteMapping("/problem/{problemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteSolutionsByProblemId(
+            @PathVariable("problemId") Long problemId) {
+        solutionService.deleteSolutionsByProblemId(problemId);
+    }
+
     @PutMapping("/{solutionId}")
     public SolutionResponse updateSolution(
-        @PathVariable("solutionId") Long solutionId,
-        @RequestBody SolutionUpdateRequest request
-    ) {
-    return solutionService.updateSolution(solutionId, request);
+            @PathVariable("solutionId") Long solutionId,
+            @RequestBody SolutionUpdateRequest request) {
+        return solutionService.updateSolution(solutionId, request);
     }
 }

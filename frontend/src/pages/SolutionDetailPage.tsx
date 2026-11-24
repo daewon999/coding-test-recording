@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { deleteSolution, getSolutionById, getSolutionsByProblemId, } from '../api/solutionAPI';
+import { deleteSolution, deleteSolutionsByProblemId, getSolutionById, getSolutionsByProblemId, } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 
@@ -124,6 +124,33 @@ function SolutionDetailPage() {
     }
   }
 
+  async function handleDeleteAll() {
+    if (!solution || deleting.current) return;
+
+    const confirmed = window.confirm(
+      `"${solution.problemTitle}" 문제의 풀이 ${solutions.length}개를 모두 삭제하시겠습니까?\n\n삭제한 코드와 메모는 복구할 수 없습니다. 문제 정보는 유지됩니다.`,
+    );
+    if (!confirmed) return;
+
+    deleting.current = true;
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      await deleteSolutionsByProblemId(solution.problemId);
+      navigate('/solutions', { replace: true });
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : '전체 풀이 삭제 중 오류가 발생했습니다.',
+      );
+    } finally {
+      deleting.current = false;
+      setIsDeleting(false);
+    }
+  }
+
   if (isLoading || error || !solution) {
     return (
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
@@ -180,6 +207,15 @@ function SolutionDetailPage() {
             작성한 풀이와 학습 메모를 확인하세요.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={handleDeleteAll}
+          disabled={isDeleting || solutions.length === 0}
+          className="ml-auto shrink-0 inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          전체 풀이 삭제
+        </button>
       </header>
 
       {deleteError && (
