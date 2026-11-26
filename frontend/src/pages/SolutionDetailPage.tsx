@@ -255,7 +255,14 @@ function SolutionDetailPage() {
           풀이 정보
         </h2>
 
-        <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <dt className="text-sm text-zinc-500">문제 유형</dt>
+            <dd className="mt-2 break-words font-semibold text-zinc-900">
+              {solution.problemTags?.trim() || '미지정'}
+            </dd>
+          </div>
+
           <div>
             <dt className="text-sm text-zinc-500">사용 언어</dt>
             <dd className="mt-2 font-semibold text-zinc-900">

@@ -196,15 +196,18 @@ function SolutionListPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <caption className="sr-only">
-                전체 풀이의 문제, 언어, 결과, 풀이 날짜
+                전체 풀이의 문제, 문제 유형, 언어, 결과, 풀이 날짜
               </caption>
 
               <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
                 <tr>
                   <th scope="col" className="px-6 py-3 font-medium">
                     문제
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    문제 유형
                   </th>
                   <th scope="col" className="px-6 py-3 font-medium">
                     언어
@@ -226,6 +229,7 @@ function SolutionListPage() {
                     platform={solution.platform}
                     problemNumber={solution.problemNumber}
                     title={solution.problemTitle}
+                    problemTags={solution.problemTags}
                     language={solution.language}
                     solvedDate={solution.solvedDate}
                     correct={solution.correct}

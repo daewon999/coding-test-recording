@@ -20,6 +20,7 @@ export interface Solution {
   platform: string;
   problemNumber: string;
   problemTitle: string;
+  problemTags: string | null;
 
   language: string;
   code: string;

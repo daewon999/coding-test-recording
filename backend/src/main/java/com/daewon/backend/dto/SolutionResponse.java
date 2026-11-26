@@ -13,6 +13,7 @@ public class SolutionResponse {
     private String platform;
     private String problemNumber;
     private String problemTitle;
+    private String problemTags;
 
     private String language;
     private String code;
@@ -30,6 +31,7 @@ public class SolutionResponse {
         this.platform = solution.getProblem().getPlatform();
         this.problemNumber = solution.getProblem().getProblemNumber();
         this.problemTitle = solution.getProblem().getTitle();
+        this.problemTags = solution.getProblem().getTags();
 
         this.language = solution.getLanguage();
         this.code = solution.getCode();
@@ -59,6 +61,10 @@ public class SolutionResponse {
 
     public String getProblemTitle() {
         return problemTitle;
+    }
+
+    public String getProblemTags() {
+        return problemTags;
     }
 
     public String getLanguage() {
