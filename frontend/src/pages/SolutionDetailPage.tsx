@@ -15,6 +15,7 @@ function SolutionDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const deleting = useRef(false);
+  const selectedHistory = useRef<HTMLDetailsElement | null>(null);
 
   // 백엔드에서 받아온 풀이 한 개를 저장합니다.
   const [solution, setSolution] = useState<Solution | null>(null);
@@ -43,6 +44,7 @@ function SolutionDetailPage() {
 
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchSolution() {
       // URL에 solutionId가 없다면 API를 호출할 수 없습니다.
       if (!solutionId) {
@@ -66,21 +68,38 @@ function SolutionDetailPage() {
         setError(null);
 
         const data = await getSolutionById(parsedSolutionId);
+        if (cancelled) return;
         const history = await getSolutionsByProblemId(data.problemId);
+        if (cancelled) return;
 
         setSolution(data);
         setSolutions(history);
       } catch (error) {
+        if (cancelled) return;
         console.error(error);
         setError('풀이 상세 정보를 불러오지 못했습니다.');
       } finally {
         // 성공하든 실패하든 요청이 끝나면 로딩을 종료합니다.
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     }
 
     fetchSolution();
+    return () => { cancelled = true; };
   }, [solutionId]);
+
+  useEffect(() => {
+    if (isLoading || error || solution?.id !== Number(solutionId)) return;
+    const frame = requestAnimationFrame(() => {
+      const history = selectedHistory.current;
+      if (!history) return;
+      window.scrollTo({
+        top: window.scrollY + history.getBoundingClientRect().top - 96,
+        behavior: 'instant',
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isLoading, error, solution, solutionId]);
 
   async function handleDelete(target: Solution) {
     if (!solution || deleting.current) return;
@@ -274,8 +293,9 @@ function SolutionDetailPage() {
         {sortedSolutions.map((item) => (
           <details
             key={item.id}
+            ref={item.id === solution.id ? selectedHistory : undefined}
             open={item.id === solution.id}
-            className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+            className="scroll-mt-24 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
           >
             <summary className="cursor-pointer px-6 py-4 font-medium text-zinc-900">
               <time dateTime={item.solvedDate}>{item.solvedDate}</time>
