@@ -19,6 +19,8 @@ function SolutionListPage() {
   const [filter, setFilter] =
     useState<'all' | 'correct' | 'incorrect'>('all');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
     let ignore = false;
 
@@ -54,6 +56,14 @@ function SolutionListPage() {
     };
   }, [filter]);
 
+  // 검색어 앞뒤 공백을 제거하고 영어를 소문자로 통일합니다.
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  // 현재 정답·오답 필터로 가져온 목록에서 제목을 검색합니다.
+  const visibleSolutions = solutions.filter((solution) =>
+    solution.problemTitle.toLowerCase().includes(normalizedQuery),
+  );
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -74,6 +84,25 @@ function SolutionListPage() {
           새 풀이 작성
         </Link>
       </header>
+
+
+      <div className="mt-6">
+        <label
+          htmlFor="title-search"
+          className="mb-2 block text-sm font-medium text-zinc-700"
+        >
+          문제 제목 검색
+        </label>
+
+        <input
+          id="title-search"
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="문제 제목을 입력하세요"
+          className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 sm:max-w-md"
+        />
+      </div>
 
       <div className="mt-6 flex gap-2" aria-label="풀이 결과 필터">
         <button
@@ -106,7 +135,7 @@ function SolutionListPage() {
         <p className="mt-8 mb-4 text-sm text-zinc-500">
           총{' '}
           <span className="font-semibold text-zinc-900">
-            {solutions.length.toLocaleString()}
+            {visibleSolutions.length.toLocaleString()}
           </span>
           개의 풀이
         </p>
@@ -151,6 +180,20 @@ function SolutionListPage() {
               </button>
             )}
           </div>
+        ) : visibleSolutions.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-zinc-500">
+              검색 조건에 맞는 풀이가 없습니다.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
+            >
+              검색어 지우기
+            </button>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-left text-sm">
@@ -176,7 +219,7 @@ function SolutionListPage() {
               </thead>
 
               <tbody>
-                {solutions.map((solution) => (
+                {visibleSolutions.map((solution) => (
                   <SolutionListItem
                     key={solution.id}
                     id={solution.id}
