@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllSolutions } from '../api/solutionAPI';
+import { getAllSolutions, getSolutionsByCorrect } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 import SolutionListItem from '../components/main/SolutionListItem';
 import { Link } from "react-router-dom";
@@ -15,25 +15,54 @@ function SolutionListPage() {
   // API 요청 실패 시 보여줄 오류 메시지
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function loadSolutions() {
-      try {
-        // solutionAPI.ts의 전체 풀이 조회 함수 실행
-        const data = await getAllSolutions();
+  // 현재 선택한 조회 조건
+  const [filter, setFilter] =
+    useState<'all' | 'correct' | 'incorrect'>('all');
 
-        // 응답받은 풀이 배열을 상태에 저장
-        setSolutions(data);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadSolutions() {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data =
+          filter === 'all'
+            ? await getAllSolutions()
+            : await getSolutionsByCorrect(filter === 'correct');
+
+        if (!ignore) {
+          setSolutions(data);
+        }
       } catch (error) {
-        console.error('풀이 조회 오류:', error);
-        setError('풀이 목록을 불러오지 못했습니다.');
+        if (!ignore) {
+          console.error('풀이 조회 오류:', error);
+          setError('풀이 목록을 불러오지 못했습니다.');
+        }
       } finally {
-        // 성공하거나 실패하면 로딩 종료
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     }
 
     loadSolutions();
-  }, []);
+
+    return () => {
+      ignore = true;
+    };
+  }, [filter]);
+
+  // 검색어 앞뒤 공백을 제거하고 영어를 소문자로 통일합니다.
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  // 현재 정답·오답 필터로 가져온 목록에서 제목을 검색합니다.
+  const visibleSolutions = solutions.filter((solution) =>
+    solution.problemTitle.toLowerCase().includes(normalizedQuery),
+  );
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
@@ -56,11 +85,57 @@ function SolutionListPage() {
         </Link>
       </header>
 
+
+      <div className="mt-6">
+        <label
+          htmlFor="title-search"
+          className="mb-2 block text-sm font-medium text-zinc-700"
+        >
+          문제 제목 검색
+        </label>
+
+        <input
+          id="title-search"
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="문제 제목을 입력하세요"
+          className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 sm:max-w-md"
+        />
+      </div>
+
+      <div className="mt-6 flex gap-2" aria-label="풀이 결과 필터">
+        <button
+          type="button"
+          onClick={() => setFilter('all')}
+          aria-pressed={filter === 'all'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          전체
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter('correct')}
+          aria-pressed={filter === 'correct'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          정답
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter('incorrect')}
+          aria-pressed={filter === 'incorrect'}
+          className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
+        >
+          오답
+        </button>
+      </div>
+
       {!loading && !error && (
         <p className="mt-8 mb-4 text-sm text-zinc-500">
           총{' '}
           <span className="font-semibold text-zinc-900">
-            {solutions.length.toLocaleString()}
+            {visibleSolutions.length.toLocaleString()}
           </span>
           개의 풀이
         </p>
@@ -81,26 +156,58 @@ function SolutionListPage() {
         ) : solutions.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-zinc-500">
-              아직 저장한 풀이가 없습니다.
+              {filter === 'all'
+                ? '아직 저장한 풀이가 없습니다.'
+                : filter === 'correct'
+                  ? '정답 풀이가 없습니다.'
+                  : '오답 풀이가 없습니다.'}
             </p>
-            <Link
-              to="/solutions/new"
-              className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
+
+            {filter === 'all' ? (
+              <Link
+                to="/solutions/new"
+                className="mt-3 inline-flex text-sm font-medium text-blue-600 hover:underline"
+              >
+                첫 풀이 등록하기
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setFilter('all')}
+                className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
+              >
+                전체 풀이 보기
+              </button>
+            )}
+          </div>
+        ) : visibleSolutions.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-zinc-500">
+              검색 조건에 맞는 풀이가 없습니다.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
             >
-              첫 풀이 등록하기
-            </Link>
+              검색어 지우기
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <caption className="sr-only">
-                전체 풀이의 문제, 언어, 결과, 풀이 날짜
+                전체 풀이의 문제, 문제 유형, 언어, 결과, 풀이 날짜
               </caption>
 
               <thead className="border-b border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
                 <tr>
                   <th scope="col" className="px-6 py-3 font-medium">
                     문제
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-medium">
+                    문제 유형
                   </th>
                   <th scope="col" className="px-6 py-3 font-medium">
                     언어
@@ -115,13 +222,14 @@ function SolutionListPage() {
               </thead>
 
               <tbody>
-                {solutions.map((solution) => (
+                {visibleSolutions.map((solution) => (
                   <SolutionListItem
                     key={solution.id}
                     id={solution.id}
                     platform={solution.platform}
                     problemNumber={solution.problemNumber}
                     title={solution.problemTitle}
+                    problemTags={solution.problemTags}
                     language={solution.language}
                     solvedDate={solution.solvedDate}
                     correct={solution.correct}

@@ -3,7 +3,6 @@ export interface SolutionCreateRequest {
   language: string;
   code: string;
   memo: string;
-  attemptCount: number;
   correct: boolean;
   solvedDate: string;
 }
@@ -21,12 +20,12 @@ export interface Solution {
   platform: string;
   problemNumber: string;
   problemTitle: string;
+  problemTags: string | null;
 
   language: string;
   code: string;
   memo: string | null;
 
-  attemptCount: number;
   correct: boolean;
 
   solvedDate: string;

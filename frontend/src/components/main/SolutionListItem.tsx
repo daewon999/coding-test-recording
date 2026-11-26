@@ -5,6 +5,7 @@ interface SolutionListItemProps {
   platform: string;
   problemNumber: string;
   title: string;
+  problemTags: string | null;
   language: string;
   solvedDate: string;
   correct: boolean;
@@ -15,6 +16,7 @@ function SolutionListItem({
   platform,
   problemNumber,
   title,
+  problemTags,
   language,
   solvedDate,
   correct,
@@ -32,6 +34,10 @@ function SolutionListItem({
         <p className="mt-1 text-xs text-zinc-500">
           {platform} · {problemNumber}
         </p>
+      </td>
+
+      <td className="max-w-xs break-words px-6 py-4 text-zinc-600">
+        {problemTags?.trim() || '미지정'}
       </td>
 
       <td className="px-6 py-4">

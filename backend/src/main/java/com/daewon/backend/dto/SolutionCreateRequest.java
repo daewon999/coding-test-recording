@@ -8,7 +8,6 @@ public class SolutionCreateRequest {
     private String language;
     private String code;
     private String memo;
-    private int attemptCount;
     private boolean correct;
     private LocalDate solvedDate;
 
@@ -26,10 +25,6 @@ public class SolutionCreateRequest {
 
     public String getMemo() {
         return memo;
-    }
-
-    public int getAttemptCount() {
-        return attemptCount;
     }
 
     public boolean isCorrect() {

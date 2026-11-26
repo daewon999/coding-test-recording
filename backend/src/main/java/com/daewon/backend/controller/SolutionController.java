@@ -1,6 +1,9 @@
 package com.daewon.backend.controller;
 
 import com.daewon.backend.dto.SolutionCreateRequest;
+import com.daewon.backend.dto.RecordSolutionRequest;
+import com.daewon.backend.dto.RecordSolutionResult;
+import com.daewon.backend.service.RecordSolutionService;
 import com.daewon.backend.dto.SolutionResponse;
 import com.daewon.backend.service.SolutionService;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,17 @@ import java.util.List;
 public class SolutionController {
 
     private final SolutionService solutionService;
+    private final RecordSolutionService recordSolutionService;
 
-    public SolutionController(SolutionService solutionService) {
+    public SolutionController(SolutionService solutionService, RecordSolutionService recordSolutionService) {
         this.solutionService = solutionService;
+        this.recordSolutionService = recordSolutionService;
+    }
+
+    @PostMapping("/record")
+    public RecordSolutionResult recordSolution(
+            @RequestBody RecordSolutionRequest request) {
+        return recordSolutionService.record(request);
     }
 
     @GetMapping
@@ -60,18 +71,26 @@ public class SolutionController {
     public SolutionResponse getSolutionById(@PathVariable Long solutionId) {
         return solutionService.getSolutionById(solutionId);
     }
-
+    
+    // 풀이 하나 삭제
     @DeleteMapping("/{solutionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSolution(@PathVariable("solutionId") Long solutionId) {
         solutionService.deleteSolution(solutionId);
     }
 
+    // 특정 문제의 풀이 전부 삭제
+    @DeleteMapping("/problem/{problemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteSolutionsByProblemId(
+            @PathVariable("problemId") Long problemId) {
+        solutionService.deleteSolutionsByProblemId(problemId);
+    }
+
     @PutMapping("/{solutionId}")
     public SolutionResponse updateSolution(
-        @PathVariable("solutionId") Long solutionId,
-        @RequestBody SolutionUpdateRequest request
-    ) {
-    return solutionService.updateSolution(solutionId, request);
+            @PathVariable("solutionId") Long solutionId,
+            @RequestBody SolutionUpdateRequest request) {
+        return solutionService.updateSolution(solutionId, request);
     }
 }

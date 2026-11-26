@@ -23,4 +23,7 @@ public interface SolutionRepository extends JpaRepository<Solution, Long> {
 
     // 정답 여부로 조회
     List<Solution> findByCorrect(boolean correct);
+
+    // 특정 문제에 연결된 풀이를 모두 삭제합니다.
+    void deleteByProblem(Problem problem);
 }

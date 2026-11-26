@@ -13,11 +13,11 @@ public class SolutionResponse {
     private String platform;
     private String problemNumber;
     private String problemTitle;
+    private String problemTags;
 
     private String language;
     private String code;
     private String memo;
-    private int attemptCount;
     private boolean correct;
     private LocalDate solvedDate;
 
@@ -31,11 +31,11 @@ public class SolutionResponse {
         this.platform = solution.getProblem().getPlatform();
         this.problemNumber = solution.getProblem().getProblemNumber();
         this.problemTitle = solution.getProblem().getTitle();
+        this.problemTags = solution.getProblem().getTags();
 
         this.language = solution.getLanguage();
         this.code = solution.getCode();
         this.memo = solution.getMemo();
-        this.attemptCount = solution.getAttemptCount();
         this.correct = solution.isCorrect();
         this.solvedDate = solution.getSolvedDate();
 
@@ -63,6 +63,10 @@ public class SolutionResponse {
         return problemTitle;
     }
 
+    public String getProblemTags() {
+        return problemTags;
+    }
+
     public String getLanguage() {
         return language;
     }
@@ -73,10 +77,6 @@ public class SolutionResponse {
 
     public String getMemo() {
         return memo;
-    }
-
-    public int getAttemptCount() {
-        return attemptCount;
     }
 
     public boolean isCorrect() {

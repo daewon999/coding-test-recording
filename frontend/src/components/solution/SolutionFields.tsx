@@ -25,10 +25,6 @@ export default function SolutionFields({ form, onChange: change }: Props) {
             <textarea id="memo" value={form.memo} onChange={(e) => change('memo', e.target.value)} rows={5} className={inputClass + ' resize-y leading-6'} />
           </div>
           <div>
-            <label htmlFor="attemptCount" className={labelClass}>시도 횟수</label>
-            <input id="attemptCount" type="number" min={1} max={2147483647} step={1} required value={Number.isNaN(form.attemptCount) ? '' : form.attemptCount} onChange={(e) => change('attemptCount', e.target.valueAsNumber)} className={inputClass} />
-          </div>
-          <div>
             <label htmlFor="correct" className={labelClass}>정답 여부</label>
             <select id="correct" value={String(form.correct)} onChange={(e) => change('correct', e.target.value === 'true')} className={inputClass}>
               <option value="true">정답</option>

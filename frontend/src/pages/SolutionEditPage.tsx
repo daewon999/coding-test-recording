@@ -41,7 +41,6 @@ function SolutionEditForm({ solutionId }: { solutionId: number }) {
           language: data.language,
           code: data.code,
           memo: data.memo ?? '',
-          attemptCount: data.attemptCount,
           correct: data.correct,
           solvedDate: data.solvedDate,
         });
