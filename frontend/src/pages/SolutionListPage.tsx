@@ -5,6 +5,23 @@ import SolutionListItem from '../components/main/SolutionListItem';
 import { Link } from "react-router-dom";
 import { Plus } from 'lucide-react';
 
+type SolutionFilter = 'all' | 'correct' | 'incorrect';
+const SEARCH_STORAGE_KEY = 'solution-list-search';
+
+function readSearchConditions(): { filter: SolutionFilter; searchQuery: string } {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SEARCH_STORAGE_KEY) ?? 'null');
+    return {
+      filter: saved?.filter === 'correct' || saved?.filter === 'incorrect'
+        ? saved.filter
+        : 'all',
+      searchQuery: typeof saved?.searchQuery === 'string' ? saved.searchQuery : '',
+    };
+  } catch {
+    return { filter: 'all', searchQuery: '' };
+  }
+}
+
 function SolutionListPage() {
   // 백엔드에서 받아온 전체 풀이 목록
   const [solutions, setSolutions] = useState<Solution[]>([]);
@@ -16,10 +33,22 @@ function SolutionListPage() {
   const [error, setError] = useState('');
 
   // 현재 선택한 조회 조건
-  const [filter, setFilter] =
-    useState<'all' | 'correct' | 'incorrect'>('all');
+  const [initialConditions] = useState(readSearchConditions);
+  const [filter, setFilter] = useState<SolutionFilter>(initialConditions.filter);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialConditions.searchQuery);
+
+  // 같은 탭에서 목록으로 돌아오거나 새로고침해도 검색 조건을 유지합니다.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        SEARCH_STORAGE_KEY,
+        JSON.stringify({ filter, searchQuery }),
+      );
+    } catch {
+      // 브라우저가 저장소 사용을 제한해도 검색 기능은 계속 사용할 수 있습니다.
+    }
+  }, [filter, searchQuery]);
 
   useEffect(() => {
     let ignore = false;
