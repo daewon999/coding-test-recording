@@ -105,6 +105,7 @@ function RecentSolutionsSection({
                   language={solution.language}
                   solvedDate={solution.solvedDate}
                   correct={solution.correct}
+                  highlightResult
                 />
               ))}
             </tbody>

@@ -1,0 +1,15 @@
+tr[data-result='correct'] {
+  background-color: #eaf6ee;
+}
+
+tr[data-result='correct']:hover {
+  background-color: #ddf0e3;
+}
+
+tr[data-result='incorrect'] {
+  background-color: #ffeded;
+}
+
+tr[data-result='incorrect']:hover {
+  background-color: #ffe1e1;
+}

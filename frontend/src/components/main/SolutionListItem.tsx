@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import './SolutionListItem.css';
 
 interface SolutionListItemProps {
   id: number;
@@ -9,6 +10,7 @@ interface SolutionListItemProps {
   language: string;
   solvedDate: string;
   correct: boolean;
+  highlightResult?: boolean;
 }
 
 function SolutionListItem({
@@ -20,9 +22,13 @@ function SolutionListItem({
   language,
   solvedDate,
   correct,
+  highlightResult = false,
 }: SolutionListItemProps) {
   return (
-    <tr className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50">
+    <tr
+      className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50"
+      data-result={highlightResult ? (correct ? 'correct' : 'incorrect') : undefined}
+    >
       <td className="px-6 py-4">
         <Link
           to={`/solutions/${id}`}
