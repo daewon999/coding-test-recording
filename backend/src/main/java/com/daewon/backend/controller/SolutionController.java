@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.daewon.backend.dto.SolutionUpdateRequest;
 import com.daewon.backend.dto.SolutionPageResponse;
+import com.daewon.backend.dto.SolutionActivityResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,6 +36,11 @@ public class SolutionController {
     @GetMapping
     public List<SolutionResponse> getAllSolutions() {
         return solutionService.getAllSolutions();
+    }
+
+    @GetMapping("/activity")
+    public SolutionActivityResponse getActivity() {
+        return solutionService.getActivity();
     }
 
     @GetMapping("/page")

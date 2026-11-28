@@ -8,6 +8,18 @@ export interface SolutionPage {
   totalPages: number;
 }
 
+export interface SolutionActivity {
+  startDate: string;
+  endDate: string;
+  days: { date: string; count: number }[];
+}
+
+export async function getSolutionActivity(): Promise<SolutionActivity> {
+  const response = await fetch('/api/solutions/activity');
+  if (!response.ok) throw new Error('풀이 활동을 불러오지 못했습니다.');
+  return response.json();
+}
+
 export async function getSolutionPage(page: number, query: string, correct?: boolean): Promise<SolutionPage> {
   const params = new URLSearchParams({ page: String(page), size: '5', query: query.trim() });
   if (correct !== undefined) params.set('correct', String(correct));

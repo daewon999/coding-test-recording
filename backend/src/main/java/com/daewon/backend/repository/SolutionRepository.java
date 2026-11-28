@@ -6,11 +6,24 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import com.daewon.backend.dto.SolutionActivityDay;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface SolutionRepository extends JpaRepository<Solution, Long> {
+    @Query("""
+        select new com.daewon.backend.dto.SolutionActivityDay(s.solvedDate, count(s))
+        from Solution s
+        where s.solvedDate between :startDate and :endDate
+        group by s.solvedDate
+        order by s.solvedDate
+        """)
+    List<SolutionActivityDay> countActivityByDate(
+            @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
     @EntityGraph(attributePaths = "problem")
     Page<Solution> findByProblem_TitleContainingIgnoreCase(String title, Pageable pageable);
 

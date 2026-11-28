@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.daewon.backend.dto.SolutionUpdateRequest;
 import org.springframework.transaction.annotation.Transactional;
 import com.daewon.backend.dto.SolutionPageResponse;
+import com.daewon.backend.dto.SolutionActivityResponse;
+import java.time.ZoneId;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -62,6 +64,14 @@ public class SolutionService {
                                 : solutionRepository.findByProblem_TitleContainingIgnoreCaseAndCorrect(title, correct, pageable);
                 return new SolutionPageResponse(result.map(SolutionResponse::new).getContent(),
                                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+        }
+
+        @Transactional(readOnly = true)
+        public SolutionActivityResponse getActivity() {
+                // 배포 서버의 시간대와 관계없이 한국 날짜를 기준으로 집계합니다.
+                var end = LocalDate.now(ZoneId.of("Asia/Seoul"));
+                var start = end.minusYears(1).plusDays(1);
+                return new SolutionActivityResponse(start, end, solutionRepository.countActivityByDate(start, end));
         }
 
         // 전체 풀이 조회

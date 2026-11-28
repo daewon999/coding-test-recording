@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StatsSection from '../components/main/StatsSection';
 import RecentSolutionsSection from '../components/main/RecentSolutionsSection';
+import ActivityCalendar from '../components/main/ActivityCalendar';
 
 function MainPage() {
   const [solutions, setSolutions] = useState<Solution[]>([]);
@@ -67,6 +68,8 @@ function MainPage() {
         isLoading={isLoading}
         error={error}
       />
+
+      <ActivityCalendar />
 
       <RecentSolutionsSection
         solutions={solutions}
