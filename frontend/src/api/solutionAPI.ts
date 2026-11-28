@@ -1,5 +1,21 @@
 import type { Solution, SolutionCreateRequest, SolutionUpdateRequest, } from '../types/solution';
 
+export interface SolutionPage {
+  content: Solution[];
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export async function getSolutionPage(page: number, query: string, correct?: boolean): Promise<SolutionPage> {
+  const params = new URLSearchParams({ page: String(page), size: '5', query: query.trim() });
+  if (correct !== undefined) params.set('correct', String(correct));
+  const response = await fetch(`/api/solutions/page?${params}`);
+  if (!response.ok) throw new Error('풀이 목록을 불러오는 데 실패했습니다.');
+  return response.json();
+}
+
 // 삭제 성공 응답(204)에는 본문이 없으므로 JSON을 읽지 않습니다.
 export async function deleteSolution(solutionId: number): Promise<void> {
   const response = await fetch(`/api/solutions/${solutionId}`, {

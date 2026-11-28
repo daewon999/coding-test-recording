@@ -9,6 +9,7 @@ import com.daewon.backend.service.SolutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.daewon.backend.dto.SolutionUpdateRequest;
+import com.daewon.backend.dto.SolutionPageResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,6 +35,15 @@ public class SolutionController {
     @GetMapping
     public List<SolutionResponse> getAllSolutions() {
         return solutionService.getAllSolutions();
+    }
+
+    @GetMapping("/page")
+    public SolutionPageResponse getSolutionPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(required = false) Boolean correct) {
+        return solutionService.getSolutionPage(page, size, query, correct);
     }
 
     @GetMapping("/problem/{problemId}")

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllSolutions, getSolutionsByCorrect } from '../api/solutionAPI';
+import { getSolutionPage } from '../api/solutionAPI';
 import type { Solution } from '../types/solution';
 import SolutionListItem from '../components/main/SolutionListItem';
 import { Link } from "react-router-dom";
@@ -8,7 +8,7 @@ import { Plus } from 'lucide-react';
 type SolutionFilter = 'all' | 'correct' | 'incorrect';
 const SEARCH_STORAGE_KEY = 'solution-list-search';
 
-function readSearchConditions(): { filter: SolutionFilter; searchQuery: string } {
+function readSearchConditions(): { filter: SolutionFilter; searchQuery: string; page: number } {
   try {
     const saved = JSON.parse(sessionStorage.getItem(SEARCH_STORAGE_KEY) ?? 'null');
     return {
@@ -16,14 +16,15 @@ function readSearchConditions(): { filter: SolutionFilter; searchQuery: string }
         ? saved.filter
         : 'all',
       searchQuery: typeof saved?.searchQuery === 'string' ? saved.searchQuery : '',
+      page: Number.isInteger(saved?.page) && saved.page >= 0 && saved.page <= 2147483647 ? saved.page : 0,
     };
   } catch {
-    return { filter: 'all', searchQuery: '' };
+    return { filter: 'all', searchQuery: '', page: 0 };
   }
 }
 
 function SolutionListPage() {
-  // 백엔드에서 받아온 전체 풀이 목록
+  // 백엔드에서 받아온 현재 페이지의 풀이 목록
   const [solutions, setSolutions] = useState<Solution[]>([]);
 
   // API 요청이 진행 중인지 저장
@@ -37,18 +38,31 @@ function SolutionListPage() {
   const [filter, setFilter] = useState<SolutionFilter>(initialConditions.filter);
 
   const [searchQuery, setSearchQuery] = useState(initialConditions.searchQuery);
+  const [page, setPage] = useState(initialConditions.page);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  function changeFilter(value: SolutionFilter) {
+    setFilter(value);
+    setPage(0);
+  }
+
+  function changeSearch(value: string) {
+    setSearchQuery(value);
+    setPage(0);
+  }
 
   // 같은 탭에서 목록으로 돌아오거나 새로고침해도 검색 조건을 유지합니다.
   useEffect(() => {
     try {
       sessionStorage.setItem(
         SEARCH_STORAGE_KEY,
-        JSON.stringify({ filter, searchQuery }),
+        JSON.stringify({ filter, searchQuery, page }),
       );
     } catch {
       // 브라우저가 저장소 사용을 제한해도 검색 기능은 계속 사용할 수 있습니다.
     }
-  }, [filter, searchQuery]);
+  }, [filter, searchQuery, page]);
 
   useEffect(() => {
     let ignore = false;
@@ -58,13 +72,19 @@ function SolutionListPage() {
       setError('');
 
       try {
-        const data =
-          filter === 'all'
-            ? await getAllSolutions()
-            : await getSolutionsByCorrect(filter === 'correct');
+        const data = await getSolutionPage(page, searchQuery,
+          filter === 'all' ? undefined : filter === 'correct');
 
         if (!ignore) {
-          setSolutions(data);
+          // 삭제 등으로 마지막 페이지가 없어졌다면 남아 있는 마지막 페이지로 이동합니다.
+          const lastPage = Math.max(0, data.totalPages - 1);
+          if (page > lastPage) {
+            setPage(lastPage);
+            return;
+          }
+          setSolutions(data.content);
+          setTotalElements(data.totalElements);
+          setTotalPages(data.totalPages);
         }
       } catch (error) {
         if (!ignore) {
@@ -83,15 +103,10 @@ function SolutionListPage() {
     return () => {
       ignore = true;
     };
-  }, [filter]);
+  }, [filter, searchQuery, page]);
 
-  // 검색어 앞뒤 공백을 제거하고 영어를 소문자로 통일합니다.
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-
-  // 현재 정답·오답 필터로 가져온 목록에서 제목을 검색합니다.
-  const visibleSolutions = solutions.filter((solution) =>
-    solution.problemTitle.toLowerCase().includes(normalizedQuery),
-  );
+  const firstPage = Math.max(0, Math.min(page - 2, totalPages - 5));
+  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => firstPage + i);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
@@ -127,7 +142,7 @@ function SolutionListPage() {
           id="title-search"
           type="search"
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) => changeSearch(event.target.value)}
           placeholder="문제 제목을 입력하세요"
           className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 sm:max-w-md"
         />
@@ -136,7 +151,7 @@ function SolutionListPage() {
       <div className="mt-6 flex gap-2" aria-label="풀이 결과 필터">
         <button
           type="button"
-          onClick={() => setFilter('all')}
+          onClick={() => changeFilter('all')}
           aria-pressed={filter === 'all'}
           className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
         >
@@ -144,7 +159,7 @@ function SolutionListPage() {
         </button>
         <button
           type="button"
-          onClick={() => setFilter('correct')}
+          onClick={() => changeFilter('correct')}
           aria-pressed={filter === 'correct'}
           className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
         >
@@ -152,7 +167,7 @@ function SolutionListPage() {
         </button>
         <button
           type="button"
-          onClick={() => setFilter('incorrect')}
+          onClick={() => changeFilter('incorrect')}
           aria-pressed={filter === 'incorrect'}
           className="cursor-pointer rounded-lg border border-zinc-200 px-4 py-2 text-sm aria-pressed:border-blue-600 aria-pressed:bg-blue-600 aria-pressed:text-white"
         >
@@ -164,7 +179,7 @@ function SolutionListPage() {
         <p className="mt-8 mb-4 text-sm text-zinc-500">
           총{' '}
           <span className="font-semibold text-zinc-900">
-            {visibleSolutions.length.toLocaleString()}
+            {totalElements.toLocaleString()}
           </span>
           개의 풀이
         </p>
@@ -182,7 +197,7 @@ function SolutionListPage() {
           <p role="alert" className="px-6 py-12 text-center text-sm text-red-700">
             {error}
           </p>
-        ) : solutions.length === 0 ? (
+        ) : solutions.length === 0 && !searchQuery.trim() ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-zinc-500">
               {filter === 'all'
@@ -202,14 +217,14 @@ function SolutionListPage() {
             ) : (
               <button
                 type="button"
-                onClick={() => setFilter('all')}
+                onClick={() => changeFilter('all')}
                 className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
               >
                 전체 풀이 보기
               </button>
             )}
           </div>
-        ) : visibleSolutions.length === 0 ? (
+        ) : solutions.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-zinc-500">
               검색 조건에 맞는 풀이가 없습니다.
@@ -217,7 +232,7 @@ function SolutionListPage() {
 
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => changeSearch('')}
               className="mt-3 cursor-pointer text-sm font-medium text-blue-600 hover:underline"
             >
               검색어 지우기
@@ -251,7 +266,7 @@ function SolutionListPage() {
               </thead>
 
               <tbody>
-                {visibleSolutions.map((solution) => (
+                {solutions.map((solution) => (
                   <SolutionListItem
                     key={solution.id}
                     id={solution.id}
@@ -269,6 +284,22 @@ function SolutionListPage() {
           </div>
         )}
       </div>
+      {!loading && !error && totalPages > 0 && (
+        <nav aria-label="풀이 목록 페이지" className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)}
+            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm disabled:opacity-40">이전</button>
+          {pageNumbers.map((number) => (
+            <button key={number} type="button" onClick={() => setPage(number)}
+              aria-label={`${number + 1}페이지`} aria-current={number === page ? 'page' : undefined}
+              className="rounded-lg border border-zinc-200 px-3 py-2 text-sm aria-[current=page]:border-blue-600 aria-[current=page]:bg-blue-600 aria-[current=page]:text-white">
+              {number + 1}
+            </button>
+          ))}
+          <button type="button" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}
+            className="rounded-lg border border-zinc-200 px-3 py-2 text-sm disabled:opacity-40">다음</button>
+          <span className="w-full text-center text-xs text-zinc-500" role="status">{page + 1} / {totalPages} 페이지</span>
+        </nav>
+      )}
     </main>
   );
 }

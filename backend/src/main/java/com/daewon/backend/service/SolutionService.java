@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import com.daewon.backend.dto.SolutionUpdateRequest;
 import org.springframework.transaction.annotation.Transactional;
+import com.daewon.backend.dto.SolutionPageResponse;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -43,6 +46,22 @@ public class SolutionService {
                 Solution savedSolution = solutionRepository.save(solution);
 
                 return new SolutionResponse(savedSolution);
+        }
+
+        @Transactional(readOnly = true)
+        public SolutionPageResponse getSolutionPage(int page, int size, String query, Boolean correct) {
+                if (page < 0 || size < 1 || size > 100) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "페이지는 0 이상, 크기는 1~100이어야 합니다.");
+                }
+                // 고유 ID로 정렬하여 같은 날짜의 기록도 순서가 일정하도록 합니다.
+                var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+                var title = query.strip();
+                var result = correct == null
+                                ? solutionRepository.findByProblem_TitleContainingIgnoreCase(title, pageable)
+                                : solutionRepository.findByProblem_TitleContainingIgnoreCaseAndCorrect(title, correct, pageable);
+                return new SolutionPageResponse(result.map(SolutionResponse::new).getContent(),
+                                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
         }
 
         // 전체 풀이 조회
